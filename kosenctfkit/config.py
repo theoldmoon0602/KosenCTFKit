@@ -1,5 +1,6 @@
 class Config():
-    SECRET_KEY = b''
-    DATABASE_URL= ''
-    DEBUG = False
+    def __init__(self):
+        self.SECRET_KEY   = ''
+        self.DATABASE_URL = ''
+        self.DEBUG        = False
 
