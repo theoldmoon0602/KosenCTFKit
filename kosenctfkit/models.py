@@ -1,6 +1,6 @@
 from datetime import datetime
 from sqlalchemy import Column, Boolean, Integer, String, Text, DateTime, ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
 import bcrypt
 
@@ -14,6 +14,13 @@ class Notification(Base):
     content = Column(Text)
     date    = Column(DateTime, default=datetime.utcnow)
 
+class Category(Base):
+    __tablename__ = 'categories'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(80), unique=True)
+    challenges = relationship('Challenge', backref='category')
+
 
 class Challenge(Base):
     __tablename__ = 'challenges'
@@ -24,9 +31,9 @@ class Challenge(Base):
     flag         = Column(Text)
     max_attempts = Column(Integer, default=0)
     score        = Column(Integer)
-    category     = Column(String(80))
+    category_id  = Column(Integer, ForeignKey('categories.id'))
     state        = Column(String(80), nullable=False, default='visible')
-    files        = relationship('Attachment', backref='challenge')
+    files        = relationship('Attachment', backref=backref('challenge', cascade='all, delete'))
     submissions  = relationship('Submission', backref='challenge')
 
     def __repr__(self):
@@ -38,7 +45,7 @@ class Attachment(Base):
 
     id           = Column(Integer, primary_key=True)
     location     = Column(Text)
-    challenge_id = Column(Integer, ForeignKey('challenges.id'))
+    challenge_id = Column(Integer, ForeignKey('challenges.id', ondelete='CASCADE'))
 
     def __repr__(self):
         return "<Attachment location={}>".format(location=self.location)
@@ -52,13 +59,14 @@ class User(Base):
     name          = Column(String(128))
     email         = Column(String(128), unique=True)
     password_hash = Column(String(128))
-    submissions   = relationship("Submission", backref="team")
+    submissions   = relationship("Submission", backref="user")
 
+    admin    = Column(Boolean, default=False)
     hidden   = Column(Boolean, default=False)
     banned   = Column(Boolean, default=False)
     verified = Column(Boolean, default=False)
 
-    team_id    = Column(Integer, ForeignKey('teams.id'))
+    team_id    = Column(Integer, ForeignKey('teams.id', ondelete='CASCADE'))
     created_at = Column(DateTime, default=datetime.utcnow)
 
     def __repr__(self):
@@ -83,7 +91,7 @@ class Team(Base):
     name        = Column(String(128), unique=True)
     email       = Column(String(128), unique=True)
     token       = Column(String(128), unique=True)
-    members     = relationship("User", backref="team")
+    members     = relationship("User", backref=backref("team", cascade='all, delete'))
     submissions = relationship("Submission", backref="team")
 
     hidden   = Column(Boolean, default=False)
@@ -111,7 +119,7 @@ class Submission(Base):
         return '<Submission {}, {}, {}, {}>'.format(self.user, self.challenge, self.text)
 
 
-class Configs(Base):
+class Config(Base):
     __tablename__ = 'config'
 
     id    = Column(Integer, primary_key=True)

@@ -10,6 +10,7 @@ responder = "*"
 bcrypt = "*"
 sqlalchemy = "*"
 psycopg2 = "*"
+pytz = "*"
 
 [requires]
 python_version = "3.7"
