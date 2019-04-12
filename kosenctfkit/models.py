@@ -14,27 +14,21 @@ class Notification(Base):
     content = Column(Text)
     date    = Column(DateTime, default=datetime.utcnow)
 
-class Category(Base):
-    __tablename__ = 'categories'
-
-    id = Column(Integer, primary_key=True)
-    name = Column(String(80), unique=True)
-    challenges = relationship('Challenge', backref='category')
-
 
 class Challenge(Base):
     __tablename__ = 'challenges'
 
-    id           = Column(Integer, primary_key=True)
-    name         = Column(String(80))
-    description  = Column(Text)
-    flag         = Column(Text)
-    max_attempts = Column(Integer, default=0)
-    score        = Column(Integer)
-    category_id  = Column(Integer, ForeignKey('categories.id'))
-    state        = Column(String(80), nullable=False, default='visible')
-    files        = relationship('Attachment', backref=backref('challenge', cascade='all, delete'))
-    submissions  = relationship('Submission', backref='challenge')
+    id          = Column(Integer, primary_key=True)
+    name        = Column(String(80), unique=True)
+    description = Column(Text)
+    author      = Column(String(80))
+    testers     = Column(Text)
+    flag        = Column(Text, nullable=False)
+    score       = Column(Integer, nullable=False)
+    category    = Column(String(80))
+    visible     = Column(String(80), nullable=False, default=False)
+    files       = relationship('Attachment', backref=backref('challenge', cascade='all, delete'))
+    submissions = relationship('Submission', backref='challenge')
 
     def __repr__(self):
         return '<Challenge {}>'.format(self.name)
@@ -123,5 +117,5 @@ class Config(Base):
     __tablename__ = 'config'
 
     id    = Column(Integer, primary_key=True)
-    key   = Column(Text)
+    key   = Column(Text, unique=True)
     value = Column(Text)

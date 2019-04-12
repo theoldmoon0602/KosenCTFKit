@@ -1,0 +1,15 @@
+version: '3'
+services:
+  kosenctfkit_db:
+    image: postgres:11
+    environment:
+      POSTGRES_DB: kosenctfkit
+      POSTGRES_USER: kosenctfkit
+      POSTGRES_PASSWORD: kosenctfkit
+    ports:
+      - 5432:5432
+  kosenctfkit_adminer:
+    image: adminer
+    ports:
+      - 15432:8080
+
