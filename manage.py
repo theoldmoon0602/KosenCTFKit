@@ -39,7 +39,7 @@ def init(ctx, conf):
     assert(type(eval(ctf_conf['score_exp'])) == int)
     assert(ctf_conf['admin_pass'] != '')
 
-    ctx.obj['app'].init_ctf(ctf_conf['name'], timezone, start_at, end_at, team_size, ctf_conf['score_exp'], ctf_conf['admin_pass'])
+    ctx.obj['app'].initCTF(ctf_conf['name'], timezone, start_at, end_at, team_size, ctf_conf['score_exp'], ctf_conf['admin_pass'])
     print("[+]Done")
 
 
