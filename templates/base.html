@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>{{ title }}</title>
+  <link rel="stylesheet" href="{{ api.static_url('style.css') }}">
+</head>
+<body>
+  <div id="app">
+      <nav class="page-nav">
+        <div class="container">
+          <h1 class="page-title">{{ app.ctf_name }}</h1>
+          {% if current_user.is_authenticated %}
+            <div>{{ current_user.name }}</div>
+          {% else %}
+            <div>login</div>
+          {% endif %}
+        </div>
+      </nav>
+    <main>
+
+    </main>
+    <footer>
+      KosenCTFKit - &copy;theoldmoon0602
+    </footer>
+  </div>
+</body>
+</html>

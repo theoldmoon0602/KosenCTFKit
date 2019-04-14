@@ -35,7 +35,7 @@ class App():
 
     def getConfig(self, key, default=None):
         v = self.session.query(Config).filter(Config.key == key).first()
-        if v:
+        if v and v.value is not None:
             return v.value
         return default
 
@@ -127,6 +127,12 @@ class App():
 
         self.session.add(s)
         self.session.commit()
+
+    def getUser(self, name):
+        return self.session.query(User).filter(User.name == name).first()
+
+    def getTeam(self, name):
+        return self.session.query(Team).filter(Team.name == name).first()
 
     def allUsers(self):
       return self.session.query(User).filter(User.hidden==False).all()

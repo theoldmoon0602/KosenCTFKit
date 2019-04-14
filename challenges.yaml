@@ -1,0 +1,9 @@
+challenges:
+  - name: Login as Admin
+    category: crypto
+    flag: KosenCTF{SUOU_MOMOKO-chang_15_v3ry_cut3}
+    description: '[{{server}}:3000]()'
+    author: theoldmoon0602
+    testers: []
+    score: 1000
+    completed: true

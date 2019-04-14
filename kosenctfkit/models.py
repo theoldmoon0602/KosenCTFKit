@@ -74,7 +74,7 @@ class User(Base, UserMixin):
         self.password_hash = bcrypt.hashpw(plaintext.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
     def check_password(self, password):
-        return bcrypt.checkpw(self.password_hash.encode('utf-8'), password.encode('utf-8'))
+        return bcrypt.checkpw(password.encode('utf-8'), self.password_hash.encode('utf-8'))
 
 
 class Team(Base):
@@ -84,7 +84,7 @@ class Team(Base):
     name        = Column(String(128), unique=True, nullable=False)
     email       = Column(String(128), unique=True)
     token       = Column(String(128), unique=True, nullable=False)
-    members     = relationship("User", backref=backref("team", cascade='all, delete'))
+    members     = relationship("User", backref=backref("team", cascade='all, delete'), lazy='dynamic')
     submissions = relationship("Submission", backref="team")
 
     hidden   = Column(Boolean, default=False)
