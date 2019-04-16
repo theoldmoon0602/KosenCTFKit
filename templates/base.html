@@ -3,26 +3,167 @@
 <head>
   <meta charset="utf-8">
   <title>{{ title }}</title>
-  <link rel="stylesheet" href="{{ api.static_url('style.css') }}">
+  <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre-exp.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre-icons.min.css">
 </head>
 <body>
-  <div id="app">
-      <nav class="page-nav">
-        <div class="container">
-          <h1 class="page-title">{{ app.ctf_name }}</h1>
-          {% if current_user.is_authenticated %}
-            <div>{{ current_user.name }}</div>
-          {% else %}
-            <div>login</div>
-          {% endif %}
-        </div>
-      </nav>
-    <main>
+  <div class="container grid-lg" id="app" v-cloak>
+    <h1 class="page-title">{{ app.ctf_name }}</h1>
+    <header class="navbar">
+      <section class="navbar-section">
+        <a href="" class="btn btn-link">Rule</a>
+        <a href="" class="btn btn-link">Challenges</a>
+        <a href="" class="btn btn-link">Scoreboard</a>
+      </section>
 
+      <section class="navbar-section" v-if="user">
+        <router-link to="/user" class="btn btn-link">[[ user.name ]]</router-link>
+        <router-link to="/team" class="btn btn-link" v-if="user.team">[[ user.team ]]</router-link>
+        <button @click="logout" class="btn btn-link">Logout</a>
+      </section>
+      <section class="navbar-section" v-else>
+        <router-link to="/login" class="btn btn-link">Login</router-link>
+        <router-link to="/register" class="btn btn-link">Register</router-link>
+      </section>
+    </header>
+
+    <main>
+      <ul>
+        <li v-for="m in messages">[[ m ]]</li>
+      </ul>
+      <ul>
+        <li v-for="e in errors">[[ e ]]</li>
+      </ul>
+      <router-view></router-view>
     </main>
-    <footer>
-      KosenCTFKit - &copy;theoldmoon0602
-    </footer>
+
   </div>
+
+  <script src="https://unpkg.com/vue/dist/vue.js"></script>
+  <script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
+  <script src="https://unpkg.com/vuex/dist/vuex.js"></script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <script src="{{ api.static_url('index.js') }}"></script>
+  <script src="{{ api.static_url('login.js') }}"></script>
+  <script src="{{ api.static_url('register.js') }}"></script>
+  <script src="{{ api.static_url('myteam.js') }}"></script>
+
+  <script>
+    function getCookie(name) {
+      var value = "; " + document.cookie;
+      var parts = value.split("; " + name + "=");
+      if (parts.length == 2) return parts.pop().split(";").shift();
+    }
+
+    Vue.use(VueRouter);
+    Vue.use(Vuex);
+
+    const api = axios.create({
+      baseURL: '{{ base_url }}',
+      withCredentials: true,
+    })
+
+    const store = new Vuex.Store({
+      state: {
+        login: false,
+        user: null,
+        errors: [],
+        messages: [],
+      },
+      getters: {
+      },
+      mutations: {
+        setLogin(state, login) {
+          state.login = login
+        },
+        setUser(state, user) {
+          state.user = user
+        },
+        setMessages(state, messages) {
+          state.errors = []
+          state.messages = messages
+        },
+        setErrors(state, errors) {
+          state.messages = []
+          state.errors = errors
+        },
+        setMessags(state, messages) {
+          state.messages = messages
+        },
+        logout(state) {
+          state.login = false
+          state.user = null
+        }
+      },
+      actions: {
+      },
+    })
+
+    const routes = [
+      {
+        path: '/',
+        component: index,
+      },
+      {
+        path: '/login',
+        component: login,
+      },
+      {
+        path: '/register',
+        component: register,
+      },
+      {
+        path: '/team',
+        component: myteam,
+      },
+    ];
+    const router = new VueRouter({routes: routes});
+    let vue = new Vue({
+      el: '#app',
+      store: store,
+      router: router,
+      delimiters: ['[[', ']]'],
+      methods: {
+        logout() {
+          document.cookie = 'user=; max-age=0'
+          this.$store.commit('logout')
+          this.$router.push('/login')
+        },
+      },
+      computed: {
+        messages() {
+          return this.$store.state.messages
+        },
+        errors() {
+          return this.$store.state.errors
+        },
+        user() {
+          if (this.$store.state.login) {
+            return this.$store.state.user
+          }
+          return null
+        }
+
+      },
+      mounted() {
+        let cookie = getCookie('user');
+        if (cookie) {
+            api.get('me')
+              .then(r => {
+                this.$store.commit('setLogin', true)
+                this.$store.commit('setUser', r.data['user'])
+              })
+              .catch(e => {console.log(e)})
+        }
+      },
+      watch: {
+        $route (to, from) {
+          this.$store.commit('setErrors', []);
+        }
+      }
+    });
+
+  </script>
 </body>
 </html>

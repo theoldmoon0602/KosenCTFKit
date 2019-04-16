@@ -87,8 +87,8 @@ class Team(Base):
     members     = relationship("User", backref=backref("team", cascade='all, delete'), lazy='dynamic')
     submissions = relationship("Submission", backref="team")
 
-    hidden   = Column(Boolean, default=False)
-    verified = Column(Boolean, default=False)
+    hidden = Column(Boolean, default=False)
+    valid  = Column(Boolean, default=False)
 
     created_at = Column(DateTime, default=datetime.utcnow)
 

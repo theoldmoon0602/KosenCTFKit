@@ -27,7 +27,7 @@ class App():
 
     @property
     def team_size(self):
-        return self.getConfig('team_size', float('inf'))
+        return float(self.getConfig('team_size', 'inf'))
 
     @property
     def score_exp(self):
@@ -74,7 +74,7 @@ class App():
             self.session.add(chal)
         self.session.commit()
 
-    def insertUser(self, user):
+    def makeUser(self, user):
         u = User()
         u.name = user['name']
         u.password = user['password']
@@ -83,8 +83,7 @@ class App():
         u.hidden = user.get('hidden', False)
         u.team_id = user.get('team_id', None)
 
-        self.session.add(u)
-        self.session.commit()
+        return u
 
     def insertTeam(self, team):
         from secrets import token_hex
@@ -98,18 +97,33 @@ class App():
         self.session.add(t)
         self.session.commit()
 
+        return t
+
+    def renewTeamToken(self, team):
+        from secrets import token_hex
+
+        team.token = token_hex(16)
+        self.session.add(team)
+        self.session.commit()
+
+        return team
+
     def joinTeam(self, user, team_token):
         t = self.session.query(Team).filter(Team.token == team_token).first()
         if t is None:
-            raise ValueError("Invalid Token")
+            raise ValueError("Invalid token")
 
         team_size = self.team_size
         if team_size <= t.members.count() + 1:
             raise ValueError("Team size overflow")
 
         user.team_id = t.id
+        t.valid = True
         self.session.add(user)
+        self.session.add(t)
         self.session.commit()
+
+        return t
 
     def insertSubmission(self, submission, user, challenge):
         s = Submission(user_id=user.id, challenge_id=challenge.id)
@@ -136,6 +150,9 @@ class App():
 
     def allUsers(self):
       return self.session.query(User).filter(User.hidden==False).all()
+
+    def allTeams(self):
+      return self.session.query(Team).filter(Team.hidden==False, Team.valid == True).all()
 
     def allChallenges(self):
       return self.session.query(Challenge).filter(Challenge.hidden==False).all()

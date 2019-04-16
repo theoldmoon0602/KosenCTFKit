@@ -10,6 +10,7 @@ bcrypt = "*"
 sqlalchemy = "*"
 psycopg2 = "*"
 pytz = "*"
+pyjwt = "*"
 
 [requires]
 python_version = "3.7"
