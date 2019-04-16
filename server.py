@@ -1,6 +1,7 @@
 import responder
 import jwt
 from asyncio import iscoroutinefunction
+from functools import wraps
 from kosenctfkit.app import App
 from kosenctfkit.models import User
 from config import ProductionConfig, DebugConfig
@@ -12,7 +13,35 @@ app = App(config)
 api = responder.API(secret_key=app.config.SECRET_KEY, debug=app.config.DEBUG)
 api.jinja_values_base['app'] = app
 
-def login_required(f, arg_name='user', cookie_key='user'):
+def hoge(f):
+    async def g(*args, **kwargs):
+        print("g:", args, kwargs)
+        return f(*args, **kwargs)
+    return g
+
+def method_decorator(decorator):
+    def new_decorator(f):
+        if iscoroutinefunction(f):
+            def wrap(self, *args, **kwargs):
+                @decorator
+                def without_self(*args2, **kwargs2):
+                    return f(self, *args2, **kwargs2)
+                return without_self(*args, **kwargs)
+            return wrap
+
+        else:
+            def wrap(self, *args, **kwargs):
+                @decorator
+                def without_self(*args2, **kwargs2):
+                    return f(self, *args2, **kwargs2)
+                return without_self(*args, **kwargs)
+            return wrap
+    return new_decorator
+
+def login_required(f):
+    # FIXME
+    arg_name='user'
+    cookie_key='user'
     def load_user(req, resp, *args, **kwargs):
         if cookie_key not in req.cookies:
             return None
@@ -29,20 +58,22 @@ def login_required(f, arg_name='user', cookie_key='user'):
         resp.media = {"error": ["Login Required"]}
         resp.status_code = 403
 
-    from functools import wraps
     if iscoroutinefunction(f):
         @wraps(f)
         async def login_f(*args, **kwargs):
             user = load_user(*args, **kwargs)
+
             if user:
                 kwargs[arg_name] = user
                 return f(*args, **kwargs)
             return not_authorized(*args, **kwargs)
         return login_f
+
     else:
         @wraps(f)
         def login_f(*args, **kwargs):
             user = load_user(*args, **kwargs)
+
             if user:
                 kwargs[arg_name] = user
                 return f(*args, **kwargs)
@@ -180,18 +211,46 @@ def myteam(req, resp, *, user):
     }
 
 @api.route('/regenerate')
-@login_required
-def regenerate(req, resp, *, user):
-    team = user.team
-    if team is None:
-        resp.media = {"error": ["You are not in any team"]}
-        resp.status_code = 400
-        return
+class Regenerate():
+    @method_decorator(login_required)
+    def on_post(self, req, resp, *, user):
+        team = user.team
+        if team is None:
+            resp.media = {"error": ["You are not in any team"]}
+            resp.status_code = 400
+            return
 
-    team = app.renewTeamToken(team)
-    resp.media = {
-        'token': team.token,
-    }
+        team = app.renewTeamToken(team)
+        resp.media = {
+            'token': team.token,
+        }
+
+@api.route('/set_password')
+class SetPassword():
+    # @method_decorator(login_required)
+    @hoge
+    async def on_post(self, req, resp):#, *, user):
+        json = await req.media('json')
+        print(json)
+        resp.media = json
+
+        # new_password = json.get('new_password', '').strip()
+        # current_password = json.get('current_password', '').strip()
+
+        # if not new_password or not current_password:
+        #     resp.media = {"error": ["New password and current password both are required"]}
+        #     resp.status_code = 400
+        #     return
+
+        # if not user.check_password(current_password):
+        #     resp.media = {"error": ["current password is wrong"]}
+        #     resp.status_code = 400
+        #     return
+
+        # user.password = new_password
+        # app.session.add(user)
+        # app.session.commit()
+
 
 if __name__ == '__main__':
     api.run()

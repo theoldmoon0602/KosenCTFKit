@@ -48,6 +48,7 @@
   <script src="{{ api.static_url('login.js') }}"></script>
   <script src="{{ api.static_url('register.js') }}"></script>
   <script src="{{ api.static_url('myteam.js') }}"></script>
+  <script src="{{ api.static_url('me.js') }}"></script>
 
   <script>
     function getCookie(name) {
@@ -116,6 +117,10 @@
       {
         path: '/team',
         component: myteam,
+      },
+      {
+        path: '/user',
+        component: me,
       },
     ];
     const router = new VueRouter({routes: routes});
