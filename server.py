@@ -1,9 +1,6 @@
 import responder
-import jwt
-from asyncio import iscoroutinefunction
-from functools import wraps
 from kosenctfkit.app import App
-from kosenctfkit.models import User
+from kosenctfkit.apiutils import method_decorator, LoginManager
 from config import ProductionConfig, DebugConfig
 import os
 
@@ -12,73 +9,8 @@ app = App(config)
 
 api = responder.API(secret_key=app.config.SECRET_KEY, debug=app.config.DEBUG)
 api.jinja_values_base['app'] = app
+lm = LoginManager(api, app)
 
-def hoge(f):
-    async def g(*args, **kwargs):
-        print("g:", args, kwargs)
-        return f(*args, **kwargs)
-    return g
-
-def method_decorator(decorator):
-    def new_decorator(f):
-        if iscoroutinefunction(f):
-            def wrap(self, *args, **kwargs):
-                @decorator
-                def without_self(*args2, **kwargs2):
-                    return f(self, *args2, **kwargs2)
-                return without_self(*args, **kwargs)
-            return wrap
-
-        else:
-            def wrap(self, *args, **kwargs):
-                @decorator
-                def without_self(*args2, **kwargs2):
-                    return f(self, *args2, **kwargs2)
-                return without_self(*args, **kwargs)
-            return wrap
-    return new_decorator
-
-def login_required(f):
-    # FIXME
-    arg_name='user'
-    cookie_key='user'
-    def load_user(req, resp, *args, **kwargs):
-        if cookie_key not in req.cookies:
-            return None
-
-        try:
-            data = jwt.decode(req.cookies[cookie_key], api.secret_key, algorithms=['HS256'])
-            return app.getUser(data['name'])
-        except jwt.exceptions.InvalidTokenError:
-            return None
-        except KeyError:
-            return None
-
-    def not_authorized(req, resp, *args, **kwargs):
-        resp.media = {"error": ["Login Required"]}
-        resp.status_code = 403
-
-    if iscoroutinefunction(f):
-        @wraps(f)
-        async def login_f(*args, **kwargs):
-            user = load_user(*args, **kwargs)
-
-            if user:
-                kwargs[arg_name] = user
-                return f(*args, **kwargs)
-            return not_authorized(*args, **kwargs)
-        return login_f
-
-    else:
-        @wraps(f)
-        def login_f(*args, **kwargs):
-            user = load_user(*args, **kwargs)
-
-            if user:
-                kwargs[arg_name] = user
-                return f(*args, **kwargs)
-            return not_authorized(*args, **kwargs)
-        return login_f
 
 @api.route('/')
 def index(req, resp):
@@ -111,21 +43,14 @@ class Login():
             return
 
         if user.check_password(password):
-            resp.media = {
-                "cookie-user": jwt.encode({"name": user.name}, api.secret_key, algorithm='HS256').decode('utf-8'),
-                "user": {
-                    "name": user.name,
-                    "id": user.id,
-                    "team": user.team.name if user.team else ''
-                }
-            }
+            lm.login(resp, user.name)
         else:
             resp.media = {"error": ["incorrect password"]}
             resp.status_code = 400
 
 
 @api.route('/me')
-@login_required
+@lm.login_required
 def me(req, resp, *, user):
     resp.media = {
         "user": {
@@ -197,22 +122,24 @@ class RegisterUser():
             resp.status_code = 400
 
 @api.route('/myteam')
-@login_required
+@lm.login_required
 def myteam(req, resp, *, user):
     team = user.team
     if team is None:
         resp.media = {"error": ["You are not in any team"]}
         resp.status_code = 400
         return
+
     resp.media = {
         'team': team.name,
         'token': team.token,
         'members': [{'name': m.name, 'id': m.id} for m in team.members.all()]
     }
 
+
 @api.route('/regenerate')
 class Regenerate():
-    @method_decorator(login_required)
+    @method_decorator(lm.login_required)
     def on_post(self, req, resp, *, user):
         team = user.team
         if team is None:
@@ -227,29 +154,26 @@ class Regenerate():
 
 @api.route('/set_password')
 class SetPassword():
-    # @method_decorator(login_required)
-    @hoge
-    async def on_post(self, req, resp):#, *, user):
+    @method_decorator(lm.login_required)
+    async def on_post(self, req, resp, *, user):
         json = await req.media('json')
-        print(json)
-        resp.media = json
 
-        # new_password = json.get('new_password', '').strip()
-        # current_password = json.get('current_password', '').strip()
+        new_password = json.get('new_password', '').strip()
+        current_password = json.get('current_password', '').strip()
 
-        # if not new_password or not current_password:
-        #     resp.media = {"error": ["New password and current password both are required"]}
-        #     resp.status_code = 400
-        #     return
+        if not new_password or not current_password:
+            resp.media = {"error": ["New password and current password both are required"]}
+            resp.status_code = 400
+            return
 
-        # if not user.check_password(current_password):
-        #     resp.media = {"error": ["current password is wrong"]}
-        #     resp.status_code = 400
-        #     return
+        if not user.check_password(current_password):
+            resp.media = {"error": ["current password is wrong"]}
+            resp.status_code = 400
+            return
 
-        # user.password = new_password
-        # app.session.add(user)
-        # app.session.commit()
+        user.password = new_password
+        app.session.add(user)
+        app.session.commit()
 
 
 if __name__ == '__main__':

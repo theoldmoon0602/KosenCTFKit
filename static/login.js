@@ -29,9 +29,8 @@ let login = Vue.component("login", {
                 password: this.password,
             })
                 .then(r => {
-                    document.cookie = 'user=' + r.data['cookie-user']
-                    this.$store.commit('setLogin', true)
-                    this.$store.commit('setUser', r.data['user'])
+                    document.cookie = 'user=' + r.data['user-cookie']
+                    this.$store.dispatch('login')
                     this.$router.push('/')
                 })
                 .catch(e => {

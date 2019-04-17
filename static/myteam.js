@@ -16,17 +16,12 @@ let myteam = Vue.component("myteam", {
         </div>
     </div>
     `,
-    data() {
-        return {
-            members: [],
-            token: ''
-        }
-    },
     mounted() {
         api.get('myteam')
             .then(r => {
-                this.members = r.data['members']
-                this.token = r.data['token']
+                if (r.data) {
+                    this.$store.commit('setTeam', r.data)
+                }
             })
             .catch(e => {
                 if (e.response.status == 403) {
@@ -40,7 +35,9 @@ let myteam = Vue.component("myteam", {
         regenerate() {
             api.post('regenerate')
                 .then(r => {
-                    this.token = r.data['token']
+                    if (r.data) {
+                        this.$store.commit('setToken', r.data['token'])
+                    }
                 })
                 .catch(e => {
                     if (e.response.status == 403) {
@@ -53,7 +50,14 @@ let myteam = Vue.component("myteam", {
     },
     computed: {
         team() {
-            return this.$store.state.user.team
-        }
+            return this.$store.state.team ? this.$store.state.team.name : ""
+        },
+        members() {
+            return this.$store.state.team ? this.$store.state.team.members : []
+        },
+        token() {
+            return this.$store.state.team ? this.$store.state.team.token : ''
+        },
+
     }
 });

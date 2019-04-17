@@ -69,6 +69,8 @@
       state: {
         login: false,
         user: null,
+        team: null,
+
         errors: [],
         messages: [],
       },
@@ -80,6 +82,9 @@
         },
         setUser(state, user) {
           state.user = user
+        },
+        setTeam(state, team) {
+          state.team = team
         },
         setMessages(state, messages) {
           state.errors = []
@@ -98,6 +103,14 @@
         }
       },
       actions: {
+        login(context) {
+          api.get('me')
+            .then(r => {
+              context.commit('setLogin', true)
+              context.commit('setUser', r.data['user'])
+            })
+            .catch(e => {console.log(e)})
+        }
       },
     })
 
@@ -154,12 +167,7 @@
       mounted() {
         let cookie = getCookie('user');
         if (cookie) {
-            api.get('me')
-              .then(r => {
-                this.$store.commit('setLogin', true)
-                this.$store.commit('setUser', r.data['user'])
-              })
-              .catch(e => {console.log(e)})
+          this.$store.dispatch('login')
         }
       },
       watch: {
