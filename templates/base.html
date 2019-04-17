@@ -3,24 +3,28 @@
 <head>
   <meta charset="utf-8">
   <title>{{ title }}</title>
-  <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre.min.css">
-  <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre-exp.min.css">
-  <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre-icons.min.css">
+  <link rel="stylesheet" href="{{ api.static_url('style/spectre.min.css')}}">
+  <link rel="stylesheet" href="{{ api.static_url('style/spectre-exp.min.css')}}">
+  <link rel="stylesheet" href="{{ api.static_url('style/spectre-icons.min.css')}}">
 </head>
 <body>
   <div class="container grid-lg" id="app" v-cloak>
     <h1 class="page-title">{{ app.ctf_name }}</h1>
     <header class="navbar">
-      <section class="navbar-section">
+      <section class="navbar-section" v-if="user">
         <a href="" class="btn btn-link">Rule</a>
-        <a href="" class="btn btn-link">Challenges</a>
+        <router-link to="/challenges" class="btn btn-link">Challenges</router-link>
+        <a href="" class="btn btn-link">Scoreboard</a>
+      </section>
+      <section class="navbar-section" v-else>
+        <a href="" class="btn btn-link">Rule</a>
         <a href="" class="btn btn-link">Scoreboard</a>
       </section>
 
       <section class="navbar-section" v-if="user">
         <router-link to="/user" class="btn btn-link">[[ user.name ]]</router-link>
         <router-link to="/team" class="btn btn-link" v-if="user.team">[[ user.team ]]</router-link>
-        <button @click="logout" class="btn btn-link">Logout</a>
+        <button @click="logout" class="btn btn-link">Logout</button>
       </section>
       <section class="navbar-section" v-else>
         <router-link to="/login" class="btn btn-link">Login</router-link>
@@ -40,15 +44,16 @@
 
   </div>
 
-  <script src="https://unpkg.com/vue/dist/vue.js"></script>
-  <script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
-  <script src="https://unpkg.com/vuex/dist/vuex.js"></script>
-  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-  <script src="{{ api.static_url('index.js') }}"></script>
-  <script src="{{ api.static_url('login.js') }}"></script>
-  <script src="{{ api.static_url('register.js') }}"></script>
-  <script src="{{ api.static_url('myteam.js') }}"></script>
-  <script src="{{ api.static_url('me.js') }}"></script>
+  <script src="{{ api.static_url('script/vue.js') }}"></script>
+  <script src="{{ api.static_url('script/vue-router.js') }}"></script>
+  <script src="{{ api.static_url('script/vuex.js') }}"></script>
+  <script src="{{ api.static_url('script/axios.min.js') }}"></script>
+  <script src="{{ api.static_url('pages/index.js') }}"></script>
+  <script src="{{ api.static_url('pages/login.js') }}"></script>
+  <script src="{{ api.static_url('pages/register.js') }}"></script>
+  <script src="{{ api.static_url('pages/myteam.js') }}"></script>
+  <script src="{{ api.static_url('pages/me.js') }}"></script>
+  <script src="{{ api.static_url('pages/challenges.js') }}"></script>
 
   <script>
     function getCookie(name) {
@@ -70,6 +75,7 @@
         login: false,
         user: null,
         team: null,
+        challenges: [],
 
         errors: [],
         messages: [],
@@ -100,6 +106,9 @@
         logout(state) {
           state.login = false
           state.user = null
+        },
+        setChallenges(state, challenges) {
+          state.challenges = challenges
         }
       },
       actions: {
@@ -134,6 +143,10 @@
       {
         path: '/user',
         component: me,
+      },
+      {
+        path: '/challenges',
+        component: challenges,
       },
     ];
     const router = new VueRouter({routes: routes});

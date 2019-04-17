@@ -61,6 +61,30 @@ def me(req, resp, *, user):
     }
 
 
+@api.route('/challenges')
+@lm.login_required
+def challenges(req, resp, *, user):
+    if user.team:
+        solves = [c.id for c in app.teamSolves(user.team)]
+    else:
+        solves = [c.id for c in app.userSolves(user)]
+
+    cs = app.allChallenges(False)
+    scores = app.challengeScores(cs)
+    challenges = []
+    for c in cs:
+        challenges.append({
+            "name": c.name,
+            "score": scores[c.id],
+            "description": c.description,
+            "category": c.category,
+            "author": c.author,
+            "testers": c.testers.split(","),
+            "solved": c.id in solves,
+        })
+    resp.media = challenges
+
+
 @api.route('/register-team')
 class RegisterTeam():
     async def on_post(self, req, resp):

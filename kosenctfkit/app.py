@@ -164,21 +164,31 @@ class App():
             return self.session.query(Challenge).filter(Challenge.hidden==False).all()
 
 
-    def _calcScore(self, challenges):
-      solved_cids = [c.id for c in challenges]
-      cid_score_counts = self.session.query(Challenge.id, Challenge.score, func.count(Submission.id)).group_by(
-        Challenge.id
-      ).filter(
-        Submission.valid == True,
-      ).all()
+    def challengeScores(self, challenges):
+        solved_cids = [c.id for c in challenges]
+        cid_score_counts = self.session.query(Challenge.id, Challenge.score, func.count(Submission.id)).group_by(
+            Challenge.id
+        ).filter(
+            Submission.valid == True,
+        ).all()
 
-      exp = self.score_exp
-      score = 0
-      for x in cid_score_counts:
-        cid, V, N = x
-        if cid in solved_cids:
-          score += eval(exp)
-        return score
+        exp = self.score_exp
+        scores = {}
+        for x in cid_score_counts:
+            cid, V, N = x
+            if cid in solved_cids:
+                scores[cid] = eval(exp)
+
+        for c in challenges:
+            if c.id not in scores:
+                V = c.score
+                N = 0
+                scores[c.id] = eval(exp)
+        return scores
+
+
+    def _calcScore(self, challenges):
+        return sum(self.challengeScores(challenges).values())
 
     def userSolves(self, user, valid_only=False):
         solves = self.session.query(Challenge).join(
@@ -194,7 +204,7 @@ class App():
       return self._calcScore(solves)
 
     def teamSolves(self, team, valid_only=False):
-      solves = self.session.query(Challenge).join(
+      solves = self.session.query(Challenge).filter(
         Challenge.hidden == False,
         Submission.valid == True if valid_only else Submission.solved == True,
         Submission.team_id == team.id,
