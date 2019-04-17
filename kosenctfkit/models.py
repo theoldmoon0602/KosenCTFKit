@@ -27,7 +27,7 @@ class Challenge(Base):
     flag        = Column(Text, nullable=False)
     score       = Column(Integer, nullable=False)
     category    = Column(String(80), default='')
-    hidden      = Column(String(80), nullable=False, default=True)
+    hidden      = Column(Boolean, nullable=False, default=True)
     files       = relationship('Attachment', backref=backref('challenge', cascade='all, delete'))
     submissions = relationship('Submission', backref='challenge')
 

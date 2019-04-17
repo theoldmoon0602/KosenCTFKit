@@ -67,11 +67,38 @@ def set_challenges(ctx, directory, only):
 
         challenges.append(c)
 
-    ctx.obj['app'].insert_challenges(challenges)
+    ctx.obj['app'].upsertChallenges(challenges)
     print("[+]Added challenges")
     for c in challenges:
         print("[+] {}".format(c['name']))
 
+@cli.command()
+@click.option('--all', is_flag=True)
+@click.pass_context
+def list_challenges(ctx, all):
+    if not ctx.obj['app'].getConfig('ctf_name'):
+        print("[!]CTF configuration is uninitialized")
+        exit()
 
+    challenges = ctx.obj['app'].allChallenges(all)
+    for c in challenges:
+        s = "`{}`\tby {}\t{}".format(c.name, c.author, "hidden" if c.hidden else "opened")
+        print(s)
+
+@cli.command()
+@click.argument("challenges", type=str)
+@click.pass_context
+def open_challenges(ctx, challenges):
+    if not ctx.obj['app'].getConfig('ctf_name'):
+        print("[!]CTF configuration is uninitialized")
+        exit()
+
+    challenges = challenges.split(",")
+    for cname in challenges:
+        c = ctx.obj['app'].getChallenge(cname)
+        c.hidden = False
+        ctx.obj['app'].session.add(c)
+    ctx.obj['app'].session.commit()
+    print("[+]Done")
 if __name__ == '__main__':
     cli()

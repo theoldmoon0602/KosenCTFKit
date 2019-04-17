@@ -145,6 +145,9 @@ class App():
     def getUser(self, name):
         return self.session.query(User).filter(User.name == name).first()
 
+    def getChallenge(self, name):
+        return self.session.query(Challenge).filter(Challenge.name == name).first()
+
     def getTeam(self, name):
         return self.session.query(Team).filter(Team.name == name).first()
 
@@ -154,8 +157,12 @@ class App():
     def allTeams(self):
       return self.session.query(Team).filter(Team.hidden==False, Team.valid == True).all()
 
-    def allChallenges(self):
-      return self.session.query(Challenge).filter(Challenge.hidden==False).all()
+    def allChallenges(self, all=False):
+        if all:
+            return self.session.query(Challenge).all()
+        else:
+            return self.session.query(Challenge).filter(Challenge.hidden==False).all()
+
 
     def _calcScore(self, challenges):
       solved_cids = [c.id for c in challenges]
