@@ -31,18 +31,22 @@ class LoginManager():
         self.cookie_name = cookie_name
         self.cookie_key = cookie_key
 
+    def getUser(self, req):
+        if self.cookie_name not in req.cookies:
+            return None
+
+        try:
+            data = jwt.decode(req.cookies[self.cookie_name], self.api.secret_key, algorithms=['HS256'])
+            return self.app.getUser(data['name'])
+        except jwt.exceptions.InvalidTokenError:
+            return None
+        except KeyError:
+            return None
+
+
     def login_required(self, f):
         def load_user(req, resp, *args, **kwargs):
-            if self.cookie_name not in req.cookies:
-                return None
-
-            try:
-                data = jwt.decode(req.cookies[self.cookie_name], self.api.secret_key, algorithms=['HS256'])
-                return self.app.getUser(data['name'])
-            except jwt.exceptions.InvalidTokenError:
-                return None
-            except KeyError:
-                return None
+            return self.getUser(req)
 
         def not_authorized(req, resp, *args, **kwargs):
             resp.media = {"error": ["Login Required"]}

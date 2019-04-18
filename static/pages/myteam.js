@@ -1,7 +1,7 @@
 let myteam = Vue.component("myteam", {
     template: `
     <div>
-        <h3>{{ team }}</h3>
+        <h3>{{ teamname }} - {{ score }}points</h3>
         <div class="input-group">
             <span class="input-group-addon">Team Token</span>
             <input type="text" class="form-input" v-model="token" readonly>
@@ -49,7 +49,7 @@ let myteam = Vue.component("myteam", {
         }
     },
     computed: {
-        team() {
+        teamname() {
             return this.$store.state.team ? this.$store.state.team.name : ""
         },
         members() {
@@ -58,6 +58,8 @@ let myteam = Vue.component("myteam", {
         token() {
             return this.$store.state.team ? this.$store.state.team.token : ''
         },
-
+        score() {
+            return this.$store.state.team ? this.$store.state.team.score : 0
+        },
     }
 });

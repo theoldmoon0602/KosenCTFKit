@@ -1,7 +1,7 @@
 let me = Vue.component("me", {
     template: `
     <div>
-        <h3>{{username }}</h3>
+        <h3>{{username}} - {{ score }}points</h3>
 
         <form @submit.prevent="set_password" class="column col-8 col-mx-auto my-2">
             <h4>Password Update</h4>
@@ -52,6 +52,9 @@ let me = Vue.component("me", {
     computed: {
         username() {
             return this.$store.state.user ? this.$store.state.user.name : ""
+        },
+        score() {
+            return this.$store.state.user ? this.$store.state.user.score : 0
         }
     }
 });

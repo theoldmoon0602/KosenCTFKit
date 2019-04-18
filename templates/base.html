@@ -6,6 +6,19 @@
   <link rel="stylesheet" href="{{ api.static_url('style/spectre.min.css')}}">
   <link rel="stylesheet" href="{{ api.static_url('style/spectre-exp.min.css')}}">
   <link rel="stylesheet" href="{{ api.static_url('style/spectre-icons.min.css')}}">
+  <style>
+.accordion {
+  border: 1px solid #302ecd;
+  padding: 5px;
+}
+.accordion-header:hover {
+  cursor: pointer;
+}
+.accordion-body {
+  margin-bottom: 0 !important;
+  padding: 0 1rem;
+}
+  </style>
 </head>
 <body>
   <div class="container grid-lg" id="app" v-cloak>
@@ -14,11 +27,11 @@
       <section class="navbar-section" v-if="user">
         <a href="" class="btn btn-link">Rule</a>
         <router-link to="/challenges" class="btn btn-link">Challenges</router-link>
-        <a href="" class="btn btn-link">Scoreboard</a>
+        <router-link to="/scoreboard" class="btn btn-link">Scoreboard</router-link>
       </section>
       <section class="navbar-section" v-else>
         <a href="" class="btn btn-link">Rule</a>
-        <a href="" class="btn btn-link">Scoreboard</a>
+        <router-link to="/scoreboard" class="btn btn-link">Scoreboard</router-link>
       </section>
 
       <section class="navbar-section" v-if="user">
@@ -54,6 +67,7 @@
   <script src="{{ api.static_url('pages/myteam.js') }}"></script>
   <script src="{{ api.static_url('pages/me.js') }}"></script>
   <script src="{{ api.static_url('pages/challenges.js') }}"></script>
+  <script src="{{ api.static_url('pages/scoreboard.js') }}"></script>
 
   <script>
     function getCookie(name) {
@@ -76,7 +90,7 @@
         user: null,
         team: null,
         challenges: [],
-
+        ranking: [],
         errors: [],
         messages: [],
       },
@@ -89,8 +103,16 @@
         setUser(state, user) {
           state.user = user
         },
+        setRanking(state, ranking) {
+          state.ranking = ranking
+        },
         setTeam(state, team) {
           state.team = team
+        },
+        setToken(state, token) {
+          if (state.team) {
+            state.team.token = token
+          }
         },
         setMessages(state, messages) {
           state.errors = []
@@ -109,6 +131,13 @@
         },
         setChallenges(state, challenges) {
           state.challenges = challenges
+        },
+        setSolved(state, challenge_id) {
+          for (let i = 0; i < state.challeges.length; i++) {
+            if (state.challenges[i].id == challenge_id) {
+              state.challenges[i].solved = true
+            }
+          }
         }
       },
       actions: {
@@ -147,6 +176,10 @@
       {
         path: '/challenges',
         component: challenges,
+      },
+      {
+        path: '/scoreboard',
+        component: scoreboard,
       },
     ];
     const router = new VueRouter({routes: routes});
