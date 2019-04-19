@@ -1,9 +1,0 @@
-ctf:
-  name: TakoyakiCTF
-  timezone: Asia/Tokyo
-  start_at: 2019-04-12 00:00:00
-  end_at: 2020-01-01 00:00:00
-  team_size: 99
-  score_exp: V
-  admin_pass: admin_password_secret
-
