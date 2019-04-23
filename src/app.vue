@@ -1,11 +1,13 @@
 <template lang="pug">
-    div
-        p app.vue
-        ul
-            li
-                router-link(to="/") index
-            li
-                router-link(to="/login") login
+    b-container
+        h1.display-4.text-center
+            b-link(to="/") KosenCTFKit
+        b-nav(pills justified)
+            b-nav-item(to="/") About
+            b-nav-item(to="/") Scoreboard
+            b-nav-item(to="/") Challenges
+            b-nav-item(to="/login") Login
+            b-nav-item(to="/register") Register
         router-view
 </template>
 
