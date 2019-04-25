@@ -99,6 +99,7 @@ class Challenge(db.Model):
     base_score = db.Column(db.Integer, nullable=False)
     score = db.Column(db.Integer, nullable=False)
     is_open = db.Column(db.Boolean, nullable=False, default=False)
+    attachements = db.relationship("Attachment", backref="challenge", lazy=True)
 
     @property
     def testers(self):
@@ -107,6 +108,14 @@ class Challenge(db.Model):
     @testers.setter
     def testers(self, tester_list):
         self.tester_array = ",".join(tester_list)
+
+
+class Attachment(db.Model):
+    __tablename__ = "attachements"
+
+    id = db.Column(db.Integer, primary_key=True)
+    url = db.Column(db.String, nullable=False)
+    challenge_id = db.Column(db.Integer, db.ForeignKey("challenges.id"), nullable=False)
 
 
 class Submission(db.Model):
@@ -124,7 +133,36 @@ class Submission(db.Model):
     is_correct = db.Column(db.Boolean, nullable=False)
 
 
+class Config(db.Model):
+    __tablename__ = "config"
+
+    name = db.Column(db.String, nullable=False, primary_key=True)
+    start_at = db.Column(db.Integer, nullable=False)
+    end_at = db.Column(db.Integer, nullable=False)
+    is_open = db.Column(db.Boolean, nullable=False)
+    register_open = db.Column(db.Boolean, nullable=False)
+    score_expr = db.Column(db.Text, nullable=False)
+
+    @property
+    def isopen(self):
+        return self.is_open and (
+            self.start_at <= datetime.utcnow().timestamp() < self.end_at
+        )
+
+    @staticmethod
+    def get():
+        return Config.query.first()
+
+
+class Log(db.Model):
+    __tablename__ = "logs"
+
+    id = db.Column(db.Integer, primary_key=True)
+    text = db.Column(db.Text, nullable=False)
+    created_at = db.Column(
+        db.Integer, nullable=False, default=lambda: datetime.utcnow().timestamp()
+    )
+
+
 def init_db(app):
     db.init_app(app)
-    with app.app_context():
-        db.create_all()

@@ -1,0 +1,11 @@
+{
+    "name": "KosenCTF",
+    "timezone": "Asia/Tokyo",
+    "start_at": "2019-01-01 00:00:00",
+    "end_at": "2020-01-01 00:00:00",
+    "score_expr": "V",
+    "admin": {
+        "name": "admin",
+        "password": "admin_secret_pass"
+    }
+}
