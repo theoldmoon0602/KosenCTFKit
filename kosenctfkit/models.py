@@ -24,6 +24,9 @@ class User(db.Model):
     def password(self, pw):
         self.password_hash = bcrypt.hashpw(pw.encode("utf-8"), bcrypt.gensalt())
 
+    def check_password(self, pw):
+        return bcrypt.checkpw(pw.encode("utf-8"), self.password_hash)
+
     def getSolves(self, valid_only):
         solves = (
             Challenge.query.join(Challenge, Submission)
@@ -52,7 +55,7 @@ class Team(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.Text, unique=True, nullable=False)
     token = db.Column(db.String(256), unique=True, nullable=False)
-    users = db.relationship("User", backref="team", lazy=True)
+    members = db.relationship("User", backref="team", lazy=True)
     valid = db.Column(db.Boolean, nullable=False, default=False)
     submissions = db.relationship("Submission", backref="team", lazy=True)
 
