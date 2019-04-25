@@ -51,7 +51,9 @@ class Team(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.Text, unique=True, nullable=False)
+    token = db.Column(db.String(256), unique=True, nullable=False)
     users = db.relationship("User", backref="team", lazy=True)
+    valid = db.Column(db.Boolean, nullable=False, default=False)
     submissions = db.relationship("Submission", backref="team", lazy=True)
 
     def getSolves(self, valid_only):
@@ -74,6 +76,11 @@ class Team(db.Model):
         for c in solves:
             score += c.score
         return score
+
+    def renewToken(self):
+        from secrets import token_hex
+
+        self.token = token_hex(16)
 
 
 class Challenge(db.Model):
