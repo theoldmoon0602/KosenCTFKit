@@ -1,6 +1,7 @@
-from kosenctfkit.models import db, init_db, Config, User
+from kosenctfkit.models import db, init_db, Config, User, Challenge
 from config import DefaultConfig
 from flask import Flask
+import os
 import sys
 import json
 import pytz
@@ -11,8 +12,11 @@ manage.py COMMAND [options]
 
 COMMAND
 -------
-init <ctfconfig.json>   --- Initialize Database with Config
-reset                   --- Drop all tables
+init <ctfconfig.json>       --- Initialize Database with Config
+reset                       --- Drop all tables
+set-challenges <challenges> --- Set Challenges as Hidden
+list-challenges             --- List Challenges
+open-challenge [name]       --- Open Challenge by Name
 """
 
 if len(sys.argv) <= 1:
@@ -22,6 +26,73 @@ if len(sys.argv) <= 1:
 app = Flask(__name__, static_url_path="")
 app.config.from_object(DefaultConfig)
 init_db(app)
+
+
+def open_challenge(challenges):
+    with app.app_context():
+        cs = Challenge.query.filter(Challenge.name.in_(challenges)).all()
+        if len(cs) == 0:
+            print("[-]Nothing to open")
+            exit()
+        for c in cs:
+            c.is_open = True
+            db.session.add(c)
+            print("open {}".format(c.name))
+        db.session.commit()
+    print("[+]Done")
+
+
+def list_challenges():
+    with app.app_context():
+        for c in Challenge.query.all():
+            print("{} {}".format("o" if c.is_open else "x", c.name))
+
+
+def set_challenges(directory):
+    for p in os.listdir(directory):
+        d = os.path.join(directory, p)
+        if not os.path.isdir(d):
+            continue
+
+        jsonfile = os.path.join(d, "challenge.json")
+        if not os.path.exists(jsonfile):
+            continue
+
+        with open(jsonfile) as jsonf:
+            challenge_data = json.load(jsonf)
+
+        name = challenge_data["name"]
+        completed = challenge_data["completed"]
+        base_score = challenge_data["base_score"]
+        author = challenge_data["author"]
+        testers = challenge_data["testers"]
+        description = challenge_data["description"]
+        flag = challenge_data["flag"]
+        category = challenge_data["category"]
+
+        # TODO: BUILD, ATTACHMENTS, DEPLOYMENT
+
+        if not completed:
+            continue
+
+        with app.app_context():
+            c = Challenge.query.filter(Challenge.name == name).first()
+            if not c:
+                c = Challenge()
+            c.name = name
+            c.is_open = False
+            c.base_score = base_score
+            c.score = eval(Config.get().score_expr, {"N": 0, "V": base_score})
+            c.author = author
+            c.testers = testers
+            c.description = description
+            c.flag = flag
+            c.category = category
+
+            db.session.add(c)
+            db.session.commit()
+        print("[+]add {}".format(name))
+    print("[+]Done")
 
 
 def init(conf):
@@ -75,8 +146,26 @@ if sys.argv[1] == "init":
         exit()
     init(sys.argv[2])
 
+elif sys.argv[1] == "open-challenge":
+    if len(sys.argv) <= 2:
+        print(help)
+        exit()
+    open_challenge(sys.argv[2:])
 
-if sys.argv[1] == "reset":
+elif sys.argv[1] == "list-challenges":
+    list_challenges()
+
+elif sys.argv[1] == "set-challenges":
+    if len(sys.argv) <= 2:
+        print(help)
+        exit()
+    set_challenges(sys.argv[2])
+
+
+elif sys.argv[1] == "reset":
     with app.app_context():
         db.drop_all()
     print("[+]Done")
+
+else:
+    print(help)

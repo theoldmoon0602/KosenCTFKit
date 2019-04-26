@@ -27,8 +27,10 @@ export default Vue.extend({
             this.$store.dispatch('login', {
                 username: this.username,
                 password: this.password
-            }).then(_ => {
-                this.$router.push('/')
+            }).then(r => {
+                if (r) {
+                    this.$router.push('/')
+                }
             })
         }
     },

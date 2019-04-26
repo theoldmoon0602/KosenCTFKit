@@ -27,12 +27,14 @@ export default {
         getMe(context) {
             return axios.get('/me', {withCredentials: true})
                 .then(r => {
-                    if (r.data) {
-                        context.commit('setUser', r.data['user'])
-                        if (r.data['user']['team']) {
-                            context.commit('setTeam', r.data['team'])
-                        }
+                    context.commit('setUser', r.data['user'])
+                    if (r.data['user']['team']) {
+                        context.commit('setTeam', r.data['team'])
                     }
+                    return r
+                })
+                .catch(e => {
+                    return false
                 })
         },
         login(context, userinfo) {
@@ -40,43 +42,40 @@ export default {
                 .then(r => {
                     context.dispatch('addMessage', 'Login Succeeded')
                     context.dispatch('getMe')
+                    return r
                 })
                 .catch(e => {
-                    if (e.response.data) {
-                        context.dispatch('addError', e.response.data['message'])
-                    }
+                    context.dispatch('addError', e.response.data['message'])
+                    return false
                 })
         },
         register(context, userinfo) {
             return axios.post('/register', userinfo)
                 .then(r => {
-                    if (r.data) {
-                        context.dispatch('addMessage', 'The user "'+ r.data['name'] + '" has just registered.')
-                    }
+                    context.dispatch('addMessage', 'The user "'+ r.data['name'] + '" has just registered.')
+                    return r
                 })
                 .catch(e => {
-                    if (e.response.data) {
-                        context.dispatch('addError', e.response.data['message'])
-                    }
+                    context.dispatch('addError', e.response.data['message'])
+                    return false
                 })
         },
         registerTeam(context, teaminfo) {
             return axios.post('/register-team', teaminfo)
                 .then(r => {
-                    if (r.data) {
-                        context.dispatch('addMessage', 'The team "'+ teaminfo.teamname +'" has just registered. Next, register as an user')
-                    }
+                    context.dispatch('addMessage', 'The team "'+ teaminfo.teamname +'" has just registered. Next, register as an user')
+                    return r
                 })
                 .catch(e => {
-                    if (e.response.data) {
-                        context.dispatch('addError', e.response.data['message'])
-                    }
+                    context.dispatch('addError', e.response.data['message'])
+                    return false
                 })
         },
         logout(context) {
             return axios.get('/logout').then(r => {
                 context.commit('logout')
                 context.dispatch('addMessage', 'Logged out')
+                return true
             })
         },
     }

@@ -36,10 +36,13 @@ export default Vue.extend({
     },
     methods: {
         registerTeam() {
+            console.log(this.teamname)
             this.$store.dispatch('registerTeam', {
-                teamname: this.teamaname
+                teamname: this.teamname
             }).then(r => {
-                this.teamtoken = r.data['token']
+                if (r.data) {
+                    this.teamtoken = r.data['token']
+                }
             })
         },
         registerUser() {
@@ -49,7 +52,9 @@ export default Vue.extend({
                 teamtoken: this.teamtoken,
             })
                 .then(r => {
-                    this.$router.push('/login')
+                    if (r) {
+                        this.$router.push('/login')
+                    }
                 })
         },
     },
