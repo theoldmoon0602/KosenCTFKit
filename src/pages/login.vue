@@ -24,24 +24,12 @@ export default Vue.extend({
     },
     methods: {
         login() {
-            axios.post('/login', {
+            this.$store.dispatch('login', {
                 username: this.username,
                 password: this.password
+            }).then(_ => {
+                this.$router.push('/')
             })
-                .then(r => {
-                    this.$store.dispatch('addMessage', 'Login Succeeded')
-                    this.$store.commit('setUser', r.data['user'])
-                    if (r.data['user']['team']) {
-                        this.$store.commit('setTeam', r.data['team'])
-                    }
-                    this.$router.push('/')
-                })
-                .catch(e => {
-                    if (e.response.data) {
-                        this.$store.dispatch('addError', e.response.data['message'])
-                    }
-                })
-
         }
     },
 })

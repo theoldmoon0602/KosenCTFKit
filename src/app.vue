@@ -13,6 +13,8 @@
             template(v-if="login")
                 li.nav-item
                     router-link(to="/") {{ user.name }}
+                li.nav-item
+                    a(href="#", @click="logout") Logout
             template(v-else)
                 li.nav-item
                     router-link(to="/login") Login
@@ -28,19 +30,15 @@ import Vue from 'vue/dist/vue.js'
 import axios from 'axios'
 export default Vue.extend({
     mounted() {
-        axios.get('/me', {withCredentials: true})
-            .then(r => {
-                if (r.data) {
-                    this.$store.commit('setUser', r.data['user'])
-                    if (r.data['user']['team']) {
-                        this.$store.commit('setTeam', r.data['team'])
-                    }
-                }
-            })
-            .catch(e => {
-                console.log(e.response.data)
-            })
-
+        this.$store.dispatch('getMe')
+    },
+    methods: {
+        logout() {
+            this.$store.dispatch('logout')
+                .then(r => {
+                    this.$router.push('/')
+                })
+        }
     },
     computed: {
         messages() {

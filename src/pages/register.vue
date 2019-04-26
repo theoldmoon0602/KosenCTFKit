@@ -36,38 +36,20 @@ export default Vue.extend({
     },
     methods: {
         registerTeam() {
-            axios.post('/register-team', {
-                teamname: this.teamname,
+            this.$store.dispatch('registerTeam', {
+                teamname: this.teamaname
+            }).then(r => {
+                this.teamtoken = r.data['token']
             })
-                .then(r => {
-                    if (r.data) {
-                        this.teamtoken = r.data['token']
-                        this.$store.dispatch('addMessage', 'The team "'+ this.teamname +'" has just registered. Next, register as an user')
-                    }
-                })
-                .catch(e => {
-                    if (e.response.data) {
-                        this.$store.dispatch('addError', e.response.data['message'])
-                    }
-                })
         },
         registerUser() {
-            axios.post('/register', {
+            this.$store.dispatch('register', {
                 username: this.username,
-                token: this.teamtoken,
                 password: this.password,
+                teamtoken: this.teamtoken,
             })
                 .then(r => {
-                    if (r.data) {
-                        this.$store.dispatch('addMessage', 'The user "'+ r.data['name'] + '" has just registered.')
-                        this.$router.push('/login')
-                    }
-                })
-                .catch(e => {
-                    console.log(e)
-                    if (e.response.data) {
-                        this.$store.dispatch('addError', e.response.data['message'])
-                    }
+                    this.$router.push('/login')
                 })
         },
     },

@@ -129,6 +129,12 @@ def login():
     return jsonify(userdump(user))
 
 
+@app.route("/logout")
+def logout():
+    _ = session.pop("user_id", None)
+    return "", 204
+
+
 @app.route("/me")
 @login_required
 def me(user):
