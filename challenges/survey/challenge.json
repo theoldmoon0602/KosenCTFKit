@@ -1,0 +1,10 @@
+{
+    "name": "Goodbye",
+    "completed": "true",
+    "base_score": 1000,
+    "author": "theoldmoon0602",
+    "testers": [],
+    "description": "<p>Hello! Thank you for playing our CTF!<br/>This is the last flag: <code>KosenCTF{g00dby3}</code></p>",
+    "flag": "KosenCTF{g00dby3}",
+    "category": "misc"
+}

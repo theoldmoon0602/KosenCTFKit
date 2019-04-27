@@ -21,6 +21,7 @@ close-ctf                   --- Close CTF & Registration
 set-challenges <challenges> --- Set Challenges as Hidden
 list-challenges             --- List Challenges
 open-challenge [name]       --- Open Challenge by Name
+recalc-challenges           --- Recalculate all Scores of Challenges
 """
 
 if len(sys.argv) <= 1:
@@ -124,7 +125,9 @@ def init(conf):
     with app.app_context():
         db.create_all()
 
-        config = Config()
+        config = Config().get()
+        if not config:
+            config = Config()
         config.name = name
         config.start_at = start_at
         config.end_at = end_at
@@ -132,7 +135,9 @@ def init(conf):
         config.is_open = is_open
         config.register_open = register_open
 
-        admin = User()
+        admin = User.query.filter(User.is_admin == True).first()
+        if not admin:
+            admin = User()
         admin.name = admin_username
         admin.password = admin_password
         admin.is_admin = True
@@ -199,6 +204,16 @@ elif sys.argv[1] == "set-challenges":
         exit()
     set_challenges(sys.argv[2])
 
+elif sys.argv[1] == "recalc-challenges":
+    with app.app_context():
+        conf = Config.get()
+        cs = Challenge.query.filter(Challenge.is_open == True).all()
+        for c in cs:
+            c.recalc_score(conf.score_expr)
+            db.session.add(c)
+            print("[+]Recalculated {}".format(c.name))
+        db.session.commit()
+    print("[+]Done")
 
 elif sys.argv[1] == "reset":
     with app.app_context():

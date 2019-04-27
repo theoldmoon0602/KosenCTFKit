@@ -145,7 +145,7 @@ class Challenge(db.Model):
         return count
 
     def recalc_score(self, expr):
-        new_score = eval(expr, {"N": self.solve_num, "V": self.base_score})
+        new_score = int(eval(expr, {"N": self.solve_num, "V": self.base_score}))
         self.score = new_score
         return new_score
 
