@@ -20,6 +20,17 @@ def get_login_user():
     return user
 
 
+def ctf_open_required(f):
+    @wraps(f)
+    def wrap(*args, **kwargs):
+        config = Config.get().first
+        if not config.is_open:
+            return error("CTF has been closed", 403)
+        return f(*args, **kwargs)
+
+    return wrap
+
+
 def login_required(f):
     @wraps(f)
     def wrap(*args, **kwargs):
@@ -96,6 +107,16 @@ def register():
     return jsonify({"id": user.id, "name": user.name})
 
 
+@app.route("/regenerate", methods=["POST"])
+@login_required
+def regenerate(user):
+    if user.team:
+        user.team.renewToken()
+        db.session.add(user.team)
+        db.session.commit()
+    return "", 204
+
+
 @app.route("/login", methods=["POST"])
 def login():
     username = request.json.get("username", None)
@@ -114,7 +135,7 @@ def login():
         return error("invalid password")
 
     session["user_id"] = user.id
-    return jsonify(user_info(user)[0])
+    return "", 204
 
 
 @app.route("/logout")
@@ -127,21 +148,54 @@ def logout():
 def update():
     user = get_login_user()
     config = Config.get()
+    ctf_name = config.name
+    register_open = config.register_open
     ctf_open = config.ctf_open
     ctf_frozen = config.ctf_frozen
+    valid_only = not ctf_frozen
+    users = get_users(valid_only=valid_only)
+    teams = get_teams(valid_only=valid_only)
+    scoreboard = get_teams(valid_only=True)
+    if not config.is_open:
+        return jsonify(
+            {
+                "is_login": False,
+                "ctf_name": ctf_name,
+                "ctf_open": ctf_open,
+                "ctf_frozen": ctf_frozen,
+                "register_open": register_open,
+                "users": [],
+                "teams": [],
+                "scoreboard": [],
+            }
+        )
     if user is None:
         return jsonify(
-            {"is_login": False, "ctf_open": ctf_open, "ctf_frozen": ctf_frozen}
+            {
+                "is_login": False,
+                "ctf_name": ctf_name,
+                "ctf_open": ctf_open,
+                "ctf_frozen": ctf_frozen,
+                "register_open": register_open,
+                "users": users,
+                "teams": teams,
+                "scoreboard": scoreboard,
+            }
         )
     else:
-        userinfo, teaminfo = user_info(user, valid_only=(not ctf_frozen))
+        userinfo, teaminfo = user_info(user, valid_only=valid_only)
         return jsonify(
             {
                 "is_login": True,
+                "ctf_name": ctf_name,
                 "ctf_open": ctf_open,
                 "ctf_frozen": ctf_frozen,
+                "register_open": register_open,
                 "user": userinfo,
                 "team": teaminfo,
+                "users": users,
+                "teams": teams,
+                "scoreboard": scoreboard,
                 "challenges": challenge_info(),
             }
         )
@@ -153,6 +207,7 @@ def user_info(user, valid_only):
             "id": user.id,
             "name": user.name,
             "team": user.team.name if user.team else None,
+            "team_id": user.team.id if user.team else None,
             "score": user.getScore(valid_only=valid_only),
             "solved": [c.id for c in user.getSolves(valid_only=valid_only)],
         },
@@ -189,8 +244,42 @@ def challenge_info():
                 "author": c.author,
                 "testers": c.testers,
                 "score": c.score,
-                "solved": c.solves,
+                "solved": c.solve_num,
                 "description": c.description,
+            }
+        )
+    return ret
+
+
+def get_teams(valid_only):
+    ts = Team.query.filter(Team.valid == True).all()
+    ret = []
+    for t in ts:
+        ret.append(
+            {
+                "id": t.id,
+                "name": t.name,
+                "members": [m.name for m in t.members.all()],
+                "score": t.getScore(valid_only=valid_only),
+                "solved": [c.id for c in t.getSolves(valid_only=valid_only)],
+                "last_submission": t.last_submission,
+            }
+        )
+    return ret
+
+
+def get_users(valid_only):
+    us = User.query.filter(User.is_admin == False).all()
+    ret = []
+    for u in us:
+        ret.append(
+            {
+                "id": u.id,
+                "name": u.name,
+                "team": u.team.name if u.team else None,
+                "score": u.getScore(valid_only=valid_only),
+                "solved": [c.id for c in u.getSolves(valid_only=valid_only)],
+                "last_submission": u.last_submission,
             }
         )
     return ret
@@ -198,6 +287,7 @@ def challenge_info():
 
 @app.route("/submit", methods=["POST"])
 @login_required
+@ctf_open_required
 def submit(user):
     challenge_id = request.json.get("id", None)
     if not challenge_id:
@@ -213,9 +303,9 @@ def submit(user):
         return error("invalid challenge id")
 
     if user.team:
-        solves = user.team.getSolves(valid_only=True)
+        solves = user.team.getSolves(valid_only=False)
     else:
-        solves = user.getSolves(valid_only=True)
+        solves = user.getSolves(valid_only=False)
     ids = [solved.id for solved in solves]
     already_solved = bool(c.id in ids)
 
@@ -240,16 +330,23 @@ def submit(user):
         )
 
     elif c.flag == flag and not already_solved:
-        s.is_valid = True
-        s.is_correct = True
+        config = Config.get()
+        if config.ctf_open:
+            s.is_valid = True
+            s.is_correct = True
+            db.session.add(s)
+            db.session.commit()
 
-        db.session.add(s)
-        db.session.commit()
+            c.recalc_score(config.score_expr)
+            db.session.add(c)
+            db.session.commit()
+        else:
+            s.is_valid = False
+            s.is_correct = True
 
-        c.recalc_score(Config.get().score_expr)
+            db.session.add(s)
+            db.session.commit()
 
-        db.session.add(c)
-        db.session.commit()
         return jsonify({"message": "Correct! You solved `{}`.".format(c.name)})
 
     else:

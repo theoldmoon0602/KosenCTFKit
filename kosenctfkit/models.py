@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import desc
 from datetime import datetime
 import bcrypt
 
@@ -48,6 +49,20 @@ class User(db.Model):
             score += c.score
         return score
 
+    @property
+    def last_submission(self):
+        s = (
+            Submission.query.filter(
+                Submission.is_valid == True, Submission.user_id == self.id
+            )
+            .order_by(desc(Submission.created_at))
+            .first()
+        )
+        if s:
+            return s.created_at
+        else:
+            return 0
+
 
 class Team(db.Model):
     __tablename__ = "teams"
@@ -80,6 +95,20 @@ class Team(db.Model):
             score += c.score
         return score
 
+    @property
+    def last_submission(self):
+        s = (
+            Submission.query.filter(
+                Submission.is_valid == True, Submission.team_id == self.id
+            )
+            .order_by(desc(Submission.created_at))
+            .first()
+        )
+        if s:
+            return s.created_at
+        else:
+            return 0
+
     def renewToken(self):
         from secrets import token_hex
 
@@ -111,13 +140,14 @@ class Challenge(db.Model):
         self.tester_array = ",".join(tester_list)
 
     @property
-    def solves(self):
-        return self.submissions.filter(Submission.is_valid == True).count()
+    def solve_num(self):
+        count = self.submissions.filter(Submission.is_valid == True).count()
+        return count
 
     def recalc_score(self, expr):
-        new_score = eval(expr, {"N": self.solves, "V": self.base_score})
+        new_score = eval(expr, {"N": self.solve_num, "V": self.base_score})
         self.score = new_score
-        return self.score
+        return new_score
 
 
 class Attachment(db.Model):

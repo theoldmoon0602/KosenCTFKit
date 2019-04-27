@@ -5,6 +5,8 @@ import index from './pages/index.vue'
 import login from './pages/login.vue'
 import register from './pages/register.vue'
 import challenges from './pages/challenges.vue'
+import scoreboard from './pages/scoreboard.vue'
+import user from './pages/user.vue'
 
 Vue.use(Router)
 
@@ -25,6 +27,15 @@ export default new Router({
         {
             path: '/challenges',
             component: challenges
+        },
+        {
+            path: '/scoreboard',
+            component: scoreboard
+        },
+        {
+            path: '/user/:user_id',
+            component: user,
+            name: 'user'
         },
     ]
 })

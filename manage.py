@@ -14,6 +14,10 @@ COMMAND
 -------
 init <ctfconfig.json>       --- Initialize Database with Config
 reset                       --- Drop all tables
+open-register               --- Open Registration
+open-ctf                    --- Open CTF & Registration
+close-register              --- Close Registration
+close-ctf                   --- Close CTF & Registration
 set-challenges <challenges> --- Set Challenges as Hidden
 list-challenges             --- List Challenges
 open-challenge [name]       --- Open Challenge by Name
@@ -145,6 +149,36 @@ if sys.argv[1] == "init":
         print(help)
         exit()
     init(sys.argv[2])
+
+elif sys.argv[1] == "open-registration":
+    with app.app_context():
+        config = Config.get()
+        config.register_open = True
+        db.session.add(config)
+        db.session.commit()
+
+elif sys.argv[1] == "open-ctf":
+    with app.app_context():
+        config = Config.get()
+        config.register_open = True
+        config.is_open = True
+        db.session.add(config)
+        db.session.commit()
+
+elif sys.argv[1] == "close-registration":
+    with app.app_context():
+        config = Config.get()
+        config.register_open = False
+        db.session.add(config)
+        db.session.commit()
+
+elif sys.argv[1] == "close-ctf":
+    with app.app_context():
+        config = Config.get()
+        config.register_open = False
+        config.is_open = False
+        db.session.add(config)
+        db.session.commit()
 
 elif sys.argv[1] == "open-challenge":
     if len(sys.argv) <= 2:

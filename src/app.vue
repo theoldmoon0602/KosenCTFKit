@@ -6,12 +6,12 @@
             li.nav-item
                 router-link(to="/") About
             li.nav-item
-                router-link(to="/") Scoreboard
+                router-link(to="/scoreboard") Scoreboard
             template(v-if="login")
                 li.nav-item
                     router-link(to="/challenges") Challenges
                 li.nav-item
-                    router-link(to="/") {{ user.name }}
+                    router-link(:to="{name: 'user', params: {user_id: user.id}}") {{ user.name }}
                 li.nav-item
                     a(href="#", @click="logout") Logout
             template(v-else)
@@ -56,7 +56,7 @@ export default Vue.extend({
             return this.$store.getters.isLogin;
         },
         user() {
-            return this.$store.state.user;
+            return this.$store.getters.getUser;
         }
     },
 })

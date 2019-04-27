@@ -49,7 +49,7 @@ export default Vue.extend({
             this.$store.dispatch('register', {
                 username: this.username,
                 password: this.password,
-                teamtoken: this.teamtoken,
+                token: this.teamtoken,
             })
                 .then(r => {
                     if (r) {

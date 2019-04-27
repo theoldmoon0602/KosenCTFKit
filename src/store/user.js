@@ -11,6 +11,9 @@ export default {
     getters: {
         isLogin(state) {
             return state.id >= 0
+        },
+        getUser(state) {
+            return state
         }
     },
     mutations: {
