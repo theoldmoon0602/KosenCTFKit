@@ -2,12 +2,11 @@ import axios from 'axios'
 
 export default {
     state: {
-        id: undefined,
-        name: '',
+        id: null,
+        name: null,
+        team: null,
         score: 0,
-        validScore: 0,
         solved: [],
-        validSolved: [],
     },
     getters: {
         isLogin(state) {
@@ -24,24 +23,11 @@ export default {
         }
     },
     actions: {
-        getMe(context) {
-            return axios.get('/me', {withCredentials: true})
-                .then(r => {
-                    context.commit('setUser', r.data['user'])
-                    if (r.data['user']['team']) {
-                        context.commit('setTeam', r.data['team'])
-                    }
-                    return r
-                })
-                .catch(e => {
-                    return false
-                })
-        },
         login(context, userinfo) {
             return axios.post('/login', userinfo)
                 .then(r => {
                     context.dispatch('addMessage', 'Login Succeeded')
-                    context.dispatch('getMe')
+                    context.dispatch('update')
                     return r
                 })
                 .catch(e => {

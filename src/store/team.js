@@ -2,13 +2,15 @@ export default {
     state: {
         id: undefined,
         name: '',
+        token: '',
         members: [],
         score: 0,
-        validScore: 0,
         solved: [],
-        validSolved: [],
     },
     getters: {
+        getTeamSolved(state) {
+            return state.solved
+        }
     },
     mutations: {
         setTeam(state, team) {

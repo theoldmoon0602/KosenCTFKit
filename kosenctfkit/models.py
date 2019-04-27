@@ -14,7 +14,7 @@ class User(db.Model):
     team_id = db.Column(db.Integer, db.ForeignKey("teams.id"))
     icon = db.Column(db.Text)
     is_admin = db.Column(db.Boolean, default=False, nullable=False)
-    submissions = db.relationship("Submission", backref="user", lazy=True)
+    submissions = db.relationship("Submission", backref="user", lazy="dynamic")
 
     @property
     def password(self):
@@ -29,9 +29,9 @@ class User(db.Model):
 
     def getSolves(self, valid_only):
         solves = (
-            Challenge.query.join(Challenge, Submission)
+            db.session.query(Challenge)
+            .join(Submission, Challenge.id == Submission.challenge_id)
             .filter(
-                Submission.challenge_id == Challenge.id,
                 Submission.is_valid == True
                 if valid_only
                 else Submission.is_correct == True,
@@ -55,13 +55,13 @@ class Team(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.Text, unique=True, nullable=False)
     token = db.Column(db.String(256), unique=True, nullable=False)
-    members = db.relationship("User", backref="team", lazy=True)
+    members = db.relationship("User", backref="team", lazy="dynamic")
     valid = db.Column(db.Boolean, nullable=False, default=False)
-    submissions = db.relationship("Submission", backref="team", lazy=True)
+    submissions = db.relationship("Submission", backref="team", lazy="dynamic")
 
     def getSolves(self, valid_only):
         solves = (
-            Challenge.query.join(Challenge, Submission)
+            Challenge.query.join(Submission)
             .filter(
                 Submission.challenge_id == Challenge.id,
                 Submission.is_valid == True
@@ -99,7 +99,8 @@ class Challenge(db.Model):
     base_score = db.Column(db.Integer, nullable=False)
     score = db.Column(db.Integer, nullable=False)
     is_open = db.Column(db.Boolean, nullable=False, default=False)
-    attachements = db.relationship("Attachment", backref="challenge", lazy=True)
+    attachements = db.relationship("Attachment", backref="challenge", lazy="dynamic")
+    submissions = db.relationship("Submission", backref="challenge", lazy="dynamic")
 
     @property
     def testers(self):
@@ -108,6 +109,15 @@ class Challenge(db.Model):
     @testers.setter
     def testers(self, tester_list):
         self.tester_array = ",".join(tester_list)
+
+    @property
+    def solves(self):
+        return self.submissions.filter(Submission.is_valid == True).count()
+
+    def recalc_score(self, expr):
+        new_score = eval(expr, {"N": self.solves, "V": self.base_score})
+        self.score = new_score
+        return self.score
 
 
 class Attachment(db.Model):
@@ -144,10 +154,14 @@ class Config(db.Model):
     score_expr = db.Column(db.Text, nullable=False)
 
     @property
-    def isopen(self):
+    def ctf_open(self):
         return self.is_open and (
             self.start_at <= datetime.utcnow().timestamp() < self.end_at
         )
+
+    @property
+    def ctf_frozen(self):
+        return self.is_open and datetime.utcnow().timestamp() >= self.end_at
 
     @staticmethod
     def get():

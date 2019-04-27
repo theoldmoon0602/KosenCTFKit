@@ -1,6 +1,5 @@
 <template lang="pug">
     .container
-        // b-alert(variant="danger", dismissieble, v-for="e in errors") {{ e }}
         h1.display-4.text-center
             router-link(to="/") KosenCTFKit
         ul.nav.nav-pills.nav-justified
@@ -8,9 +7,9 @@
                 router-link(to="/") About
             li.nav-item
                 router-link(to="/") Scoreboard
-            li.nav-item
-                router-link(to="/") Challenges
             template(v-if="login")
+                li.nav-item
+                    router-link(to="/challenges") Challenges
                 li.nav-item
                     router-link(to="/") {{ user.name }}
                 li.nav-item
@@ -20,8 +19,8 @@
                     router-link(to="/login") Login
                 li.nav-item
                     router-link(to="/register") Register
-        div.alert.alert-info(v-for="m in messages") {{ m }}
-        div.alert.alert-danger(v-for="e in errors") {{ e }}
+        div.alert.alert-dismissible.alert-info(v-for="m in messages") {{ m }}
+        div.alert.alert-dismissible.alert-danger(v-for="e in errors") {{ e }}
         router-view
 </template>
 
@@ -30,7 +29,13 @@ import Vue from 'vue/dist/vue.js'
 import axios from 'axios'
 export default Vue.extend({
     mounted() {
-        this.$store.dispatch('getMe')
+        this.$store.dispatch('update')
+
+        // polling
+        this.$store.dispatch('update')
+        setInterval(() => {
+            this.$store.dispatch('update')
+        }, 1000 * 30)
     },
     methods: {
         logout() {
