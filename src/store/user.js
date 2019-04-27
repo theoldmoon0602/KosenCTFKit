@@ -60,6 +60,17 @@ export default {
                     return false
                 })
         },
+        updatePassword(context, passwordinfo) {
+            return axios.post('/password-update', passwordinfo, {
+                withCredentials: true
+            }).then(r => {
+                context.dispatch('addMessage', 'Password Updated')
+                return r
+            }).catch(e => {
+                context.dispatch('addError', e.response.data['message'])
+                return false
+            })
+        },
         logout(context) {
             return axios.get('/logout').then(r => {
                 context.commit('logout')

@@ -185,9 +185,7 @@ class Config(db.Model):
 
     @property
     def ctf_open(self):
-        return self.is_open and (
-            self.start_at <= datetime.utcnow().timestamp() < self.end_at
-        )
+        return self.is_open and (self.start_at <= datetime.utcnow().timestamp())
 
     @property
     def ctf_frozen(self):

@@ -23,7 +23,7 @@ def get_login_user():
 def ctf_open_required(f):
     @wraps(f)
     def wrap(*args, **kwargs):
-        config = Config.get().first
+        config = Config.get()
         if not config.is_open:
             return error("CTF has been closed", 403)
         return f(*args, **kwargs)
@@ -55,6 +55,10 @@ def register_team():
     teamname = request.json.get("teamname", None)
     if not teamname:
         return error("teamname is required")
+
+    if not Config.get().register_open:
+        return error("Registration is closed")
+
     team = Team.query.filter(Team.name == teamname).first()
     if team and team.valid:
         return error("the team `{}` already exists".format(teamname))
@@ -86,6 +90,9 @@ def register():
     team = Team.query.filter(Team.token == token).first()
     if not team:
         return error("the token is invalid")
+
+    if not Config.get().register_open:
+        return error("Registration is closed")
 
     user = User.query.filter(User.name == username).first()
     if user:
@@ -138,6 +145,27 @@ def login():
     return "", 204
 
 
+@app.route("/password-update", methods=["POST"])
+@login_required
+def password_update(user):
+    cur = request.json.get("current_password", None)
+    if not cur:
+        return error("current_password required")
+
+    new = request.json.get("new_password", None)
+    if not new:
+        return error("new_password required")
+
+    if not user.check_password(cur):
+        return error("invalid current_password")
+
+    user.password = new
+    db.session.add(user)
+    db.session.commit()
+
+    return "", 204
+
+
 @app.route("/logout")
 def logout():
     _ = session.pop("user_id", None)
@@ -159,14 +187,15 @@ def update():
     if not config.is_open:
         return jsonify(
             {
-                "is_login": False,
+                "is_login": bool(user),
                 "ctf_name": ctf_name,
                 "ctf_open": ctf_open,
                 "ctf_frozen": ctf_frozen,
                 "register_open": register_open,
-                "users": [],
-                "teams": [],
-                "scoreboard": [],
+                "users": users,
+                "teams": teams,
+                "scoreboard": scoreboard,
+                "challenges": {},
             }
         )
     if user is None:
@@ -180,6 +209,7 @@ def update():
                 "users": users,
                 "teams": teams,
                 "scoreboard": scoreboard,
+                "challenges": {},
             }
         )
     else:
@@ -215,7 +245,7 @@ def user_info(user, valid_only):
             "id": user.team.id if user.team else None,
             "name": user.team.name if user.team else None,
             "token": user.team.token if user.team else None,
-            "members": [m.name for m in user.team.members] if user.team else [],
+            "members": [m.id for m in user.team.members] if user.team else [],
             "score": user.team.getScore(valid_only=valid_only)
             if user.team
             else user.getScore(valid_only=valid_only),
@@ -233,55 +263,50 @@ def user_info(user, valid_only):
 
 def challenge_info():
     cs = Challenge.query.filter(Challenge.is_open == True).all()
-    ret = []
+    ret = {}
 
     for c in cs:
-        ret.append(
-            {
-                "id": c.id,
-                "name": c.name,
-                "category": c.category,
-                "author": c.author,
-                "testers": c.testers,
-                "score": c.score,
-                "solved": c.solve_num,
-                "description": c.description,
-            }
-        )
+        ret[c.id] = {
+            "id": c.id,
+            "name": c.name,
+            "category": c.category,
+            "author": c.author,
+            "testers": c.testers,
+            "score": c.score,
+            "solved": c.solve_num,
+            "description": c.description,
+        }
     return ret
 
 
 def get_teams(valid_only):
     ts = Team.query.filter(Team.valid == True).all()
-    ret = []
+    ret = {}
     for t in ts:
-        ret.append(
-            {
-                "id": t.id,
-                "name": t.name,
-                "members": [m.name for m in t.members.all()],
-                "score": t.getScore(valid_only=valid_only),
-                "solved": [c.id for c in t.getSolves(valid_only=valid_only)],
-                "last_submission": t.last_submission,
-            }
-        )
+        ret[t.id] = {
+            "id": t.id,
+            "name": t.name,
+            "members": [m.id for m in t.members.all()],
+            "score": t.getScore(valid_only=valid_only),
+            "solved": [c.id for c in t.getSolves(valid_only=valid_only)],
+            "last_submission": t.last_submission,
+        }
     return ret
 
 
 def get_users(valid_only):
     us = User.query.filter(User.is_admin == False).all()
-    ret = []
+    ret = {}
     for u in us:
-        ret.append(
-            {
-                "id": u.id,
-                "name": u.name,
-                "team": u.team.name if u.team else None,
-                "score": u.getScore(valid_only=valid_only),
-                "solved": [c.id for c in u.getSolves(valid_only=valid_only)],
-                "last_submission": u.last_submission,
-            }
-        )
+        ret[u.id] = {
+            "id": u.id,
+            "name": u.name,
+            "team": u.team.name if u.team else None,
+            "team_id": u.team.id if u.team else None,
+            "score": u.getScore(valid_only=valid_only),
+            "solved": [c.id for c in u.getSolves(valid_only=valid_only)],
+            "last_submission": u.last_submission,
+        }
     return ret
 
 
@@ -331,7 +356,7 @@ def submit(user):
 
     elif c.flag == flag and not already_solved:
         config = Config.get()
-        if config.ctf_open:
+        if not config.ctf_frozen:
             s.is_valid = True
             s.is_correct = True
             db.session.add(s)

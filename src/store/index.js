@@ -18,11 +18,11 @@ export default new Vuex.Store({
                     if (r.data['is_login']) {
                         context.commit('setUser', r.data['user'])
                         context.commit('setTeam', r.data['team'])
-                        context.commit('setChallenges', r.data['challenges'])
                     }
                     context.commit('setUsers', r.data['users'])
                     context.commit('setTeams', r.data['teams'])
                     context.commit('setScoreboard', r.data['scoreboard'])
+                    context.commit('setChallenges', r.data['challenges'])
                     context.commit('setCTFInfo', {
                         name: r.data['ctf_name'],
                         ctf_open: r.data['ctf_open'],

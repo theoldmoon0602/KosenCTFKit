@@ -150,12 +150,13 @@ if sys.argv[1] == "init":
         exit()
     init(sys.argv[2])
 
-elif sys.argv[1] == "open-registration":
+elif sys.argv[1] == "open-register":
     with app.app_context():
         config = Config.get()
         config.register_open = True
         db.session.add(config)
         db.session.commit()
+    print("[+]Done")
 
 elif sys.argv[1] == "open-ctf":
     with app.app_context():
@@ -164,13 +165,15 @@ elif sys.argv[1] == "open-ctf":
         config.is_open = True
         db.session.add(config)
         db.session.commit()
+    print("[+]Done")
 
-elif sys.argv[1] == "close-registration":
+elif sys.argv[1] == "close-register":
     with app.app_context():
         config = Config.get()
         config.register_open = False
         db.session.add(config)
         db.session.commit()
+    print("[+]Done")
 
 elif sys.argv[1] == "close-ctf":
     with app.app_context():
@@ -179,6 +182,7 @@ elif sys.argv[1] == "close-ctf":
         config.is_open = False
         db.session.add(config)
         db.session.commit()
+    print("[+]Done")
 
 elif sys.argv[1] == "open-challenge":
     if len(sys.argv) <= 2:

@@ -11,14 +11,16 @@ export default {
         },
         getChallengesWithCategory(state) {
             let cs = {};
-            for (let c of state.challenges) {
+            for (let c of Object.values(state.challenges)) {
                 if (! cs[c.category]) {
                     cs[c.category] = []
                 }
                 cs[c.category].push(c)
             }
-            for (let i = 0; i < cs.length; i++) {
-                cs[i].sort()
+            for (let k of Object.keys(cs)) {
+                cs[k].sort((a,b) => {
+                    return a.score - b.score
+                })
             }
             return cs
         },

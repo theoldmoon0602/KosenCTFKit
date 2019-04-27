@@ -1,3 +1,5 @@
+import axios from 'axios';
+
 export default {
     state: {
         id: undefined,
@@ -8,9 +10,12 @@ export default {
         solved: [],
     },
     getters: {
+        getTeam(state) {
+            return state
+        },
         getTeamSolved(state) {
             return state.solved
-        }
+        },
     },
     mutations: {
         setTeam(state, team) {
@@ -18,5 +23,13 @@ export default {
         }
     },
     actions: {
+        regenerate(context) {
+            return axios.post('/regenerate', {}, {
+                withCredentials: true
+            }).then(r => {
+                context.dispatch('addMessage', 'Teamtoken is regenerated')
+                context.dispatch('update')
+            })
+        }
     }
 }
