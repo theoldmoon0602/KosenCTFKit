@@ -18,10 +18,11 @@
                 button.btn.btn-primary(type="submit") Update Password
 
         h4.h4 Solved Challenges
-            .card.col-12.col-md-6(v-for="cid in user.solved" v-if="challenge(cid)")
-                .card-body
-                    .card-title {{ challenge(cid).name }}
-                    .card-text {{ challenge(cid).category }} [{{challenge(cid).score}}points]
+            .row
+                .card.col-12.col-md-6(v-for="cid in user.solved" v-if="challenge(cid)")
+                    .card-body
+                        .card-title {{ challenge(cid).name }}
+                        .card-text {{ challenge(cid).category }} [{{challenge(cid).score}}points]
 
 
 </template>

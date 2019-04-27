@@ -9,15 +9,17 @@
                     button.btn.btn-primary(type="button" @click="regenerate") Regenerate
 
         h4.h4 Members
-            .card.col-12.col-md-6(v-for="m in team.members")
-                .card-body
-                    .card-title
-                        router-link(:to="'/user/'+m") {{ user(m).name }}
+            .row
+                .card.col-12.col-md-6(v-for="m in team.members")
+                    .card-body
+                        .card-title
+                            router-link(:to="'/user/'+m") {{ user(m).name }}
         h4.h4 Solved Challenges
-            .card.col-12.col-md-6(v-for="cid in team.solved" v-if="challenge(cid)")
-                .card-body
-                    .card-title {{ challenge(cid).name }}
-                    .card-text {{ challenge(cid).category }} [{{challenge(cid).score}}points]
+            .row
+                .card.col-12.col-md-6(v-for="cid in team.solved" v-if="challenge(cid)")
+                    .card-body
+                        .card-title {{ challenge(cid).name }}
+                        .card-text {{ challenge(cid).category }} [{{challenge(cid).score}}points]
 
 
 </template>
