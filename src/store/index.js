@@ -29,6 +29,11 @@ export default new Vuex.Store({
                         ctf_frozen: r.data['ctf_frozen'],
                         register_open: r.data['register_open'],
                     })
+                    return r
+                })
+                .catch(e => {
+                    context.commit('addError', 'Missing server connection')
+                    return false
                 })
         },
     },
