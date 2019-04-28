@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify, session
 from kosenctfkit.models import db, Config, Team, User
 from kosenctfkit.utils import error, login_required
+from kosenctfkit.logging import logger
 
 
 user = Blueprint("user", __name__)
@@ -8,15 +9,15 @@ user = Blueprint("user", __name__)
 
 @user.route("/register", methods=["POST"])
 def register():
-    token = request.json.get("token", None)
+    token = request.json.get("token", "").strip()
     if not token:
         return error("token is required")
 
-    username = request.json.get("username", None)
+    username = request.json.get("username", "").strip()
     if not username:
         return error("username is required")
 
-    password = request.json.get("password", None)
+    password = request.json.get("password", "").strip()
     if not password:
         return error("password is required")
 
@@ -44,6 +45,11 @@ def register():
     db.session.add(user)
     db.session.commit()
 
+    logger.log(
+        ":heavy_plus_sign: `{}@{}` has just registered".format(
+            user.name, user.team.name
+        )
+    )
     return jsonify({"id": user.id, "name": user.name})
 
 

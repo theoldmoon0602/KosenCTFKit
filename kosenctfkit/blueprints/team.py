@@ -6,7 +6,7 @@ from kosenctfkit.utils import error, login_required
 team = Blueprint("team", __name__)
 
 
-@team.route("/register", methods=["POST"])
+@team.route("/register-team", methods=["POST"])
 def register():
     teamname = request.json.get("teamname", None)
     if not teamname:

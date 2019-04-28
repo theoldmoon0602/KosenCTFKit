@@ -36,7 +36,6 @@ export default Vue.extend({
     },
     methods: {
         registerTeam() {
-            console.log(this.teamname)
             this.$store.dispatch('registerTeam', {
                 teamname: this.teamname
             }).then(r => {

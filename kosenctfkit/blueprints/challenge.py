@@ -1,6 +1,7 @@
-from flask import Blueprint, request, jsonify, session
-from kosenctfkit.models import db, Config, Team, User, Challenge, Submission
+from flask import Blueprint, request, jsonify
+from kosenctfkit.models import db, Config, Challenge, Submission, Team
 from kosenctfkit.utils import error, login_required, ctf_open_required
+from kosenctfkit.logging import logger
 
 challenge = Blueprint("challenge", __name__)
 
@@ -24,8 +25,11 @@ def submit(user):
 
     if user.team:
         solves = user.team.getSolves(valid_only=False)
+        team = user.team
     else:
         solves = user.getSolves(valid_only=False)
+        team = Team()
+        team.name = ""
     ids = [solved.id for solved in solves]
     already_solved = bool(c.id in ids)
 
@@ -37,16 +41,17 @@ def submit(user):
         s.team_id = user.team.id
 
     if c.flag == flag and already_solved:
+        logger.log(
+            ":heavy_check_mark: `{}@{}` has submitted flag `{}` to `{}`. It has already solved.".format(
+                user.name, team.name, c.name, flag
+            )
+        )
         return jsonify(
             {
                 "message": "Correct, and you or your team already has solved `{}`".format(
                     c.name
                 )
             }
-        )
-    elif c.flag != flag and already_solved:
-        return error(
-            "Wrong flag, but you or your team already has solved `{}`".format(c.name)
         )
 
     elif c.flag == flag and not already_solved:
@@ -67,7 +72,22 @@ def submit(user):
             db.session.add(s)
             db.session.commit()
 
+        logger.log(
+            ":heavy_check_mark: `{}@{}` has submitted flag `{}` to `{}`. :100:".format(
+                user.name, team.name, c.name, flag
+            )
+        )
         return jsonify({"message": "Correct! You solved `{}`.".format(c.name)})
+
+    elif c.flag != flag and already_solved:
+        logger.log(
+            ":x: `{}@{}` has submitted flag `{}` to `{}`. The correct flag is `{}`. This team already solved this challenges.".format(
+                user.name, team.name, c.name, flag, c.flag
+            )
+        )
+        return error(
+            "Wrong flag, but you or your team already has solved `{}`".format(c.name)
+        )
 
     else:
         s.is_valid = False
@@ -75,4 +95,9 @@ def submit(user):
 
         db.session.add(s)
         db.session.commit()
+        logger.log(
+            ":x: `{}@{}` has submitted flag `{}` to `{}`. The correct flag is `{}`".format(
+                user.name, team.name, c.name, flag, c.flag
+            )
+        )
         return error("Wrong flag")

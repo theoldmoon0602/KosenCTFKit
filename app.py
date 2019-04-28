@@ -1,6 +1,7 @@
 from flask import Flask, jsonify
 from config import DefaultConfig
 from kosenctfkit.models import init_db, Config
+from kosenctfkit.logging import logger
 from kosenctfkit.utils import get_login_user
 from kosenctfkit.api import get_challenges, get_users, get_teams, get_user_and_team
 from kosenctfkit.blueprints import challenge, team, user
@@ -51,5 +52,7 @@ def update():
 if __name__ == "__main__":
     app.config.from_object(DefaultConfig)
     init_db(app)
+    if "WEBHOOK_URL" in app.config:
+        logger.init(app.config["WEBHOOK_URL"])
 
     app.run()
