@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify, session
 from kosenctfkit.models import db, Config, Team, User
 from kosenctfkit.utils import error, login_required
 from kosenctfkit.logging import logger
+from kosenctfkit.uploader import uploader
 
 
 user = Blueprint("user", __name__)
@@ -55,11 +56,11 @@ def register():
 
 @user.route("/login", methods=["POST"])
 def login():
-    username = request.json.get("username", None)
+    username = request.json.get("username", "").strip()
     if not username:
         return error("username is required")
 
-    password = request.json.get("password", None)
+    password = request.json.get("password", "").strip()
     if not password:
         return error("password is required")
 
@@ -77,11 +78,11 @@ def login():
 @user.route("/password-update", methods=["POST"])
 @login_required
 def password_update(user):
-    cur = request.json.get("current_password", None)
+    cur = request.json.get("current_password", "").strip()
     if not cur:
         return error("current_password required")
 
-    new = request.json.get("new_password", None)
+    new = request.json.get("new_password", "").strip()
     if not new:
         return error("new_password required")
 
@@ -92,6 +93,22 @@ def password_update(user):
     db.session.add(user)
     db.session.commit()
 
+    return "", 204
+
+
+@user.route("/upload-icon", methods=["POST"])
+@login_required
+def upload_icon(user):
+    icon = request.json.get("icon", "").strip()
+    if not icon:
+        return error("icon required")
+    path = uploader.upload_icon(icon)
+    if not path:
+        return error("failed to upload")
+
+    user.icon = path
+    db.session.add(user)
+    db.session.commit()
     return "", 204
 
 

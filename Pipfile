@@ -10,6 +10,8 @@ flask = "*"
 flask-sqlalchemy = "*"
 sqlalchemy = "*"
 bcrypt = "*"
+pillow = "*"
+requests = "*"
 
 [requires]
 python_version = "3.7"

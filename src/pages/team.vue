@@ -14,6 +14,7 @@
                     .card-body
                         .card-title
                             router-link(:to="'/user/'+m") {{ user(m).name }}
+                        img.icon(v-if="user(m).icon" :src="user(m).icon" :alt="user(m).name")
         h4.h4 Solved Challenges
             .row
                 .card.col-12.col-md-6(v-for="cid in team.solved" v-if="challenge(cid)")

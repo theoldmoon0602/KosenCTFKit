@@ -71,6 +71,20 @@ export default {
                 return false
             })
         },
+        uploadIcon(context, icon) {
+            return axios.post('/upload-icon', {
+                icon: icon
+            }, {
+                withCredentials: true
+            }).then(r => {
+                context.dispatch('addMessage', 'Your Icon Uploaded Successfully')
+                context.dispatch('update')
+                return r
+            }).catch(e => {
+                context.dispatch('addError', e.response.data['message'])
+                return false
+            })
+        },
         logout(context) {
             return axios.get('/logout').then(r => {
                 context.commit('logout')

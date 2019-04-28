@@ -94,4 +94,7 @@ h1,h2,h3,h4 {
 .nav-link {
     font-size: 1.5rem !important;
 }
+.icon {
+    max-width: 256px;
+}
 </style>

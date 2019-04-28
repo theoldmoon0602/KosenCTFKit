@@ -13,7 +13,7 @@ def submit(user):
     challenge_id = request.json.get("id", None)
     if not challenge_id:
         return error("challenge id required")
-    flag = request.json.get("flag", None)
+    flag = request.json.get("flag", "").strip()
     if not challenge_id:
         return error("flag required")
 

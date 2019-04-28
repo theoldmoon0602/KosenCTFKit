@@ -5,6 +5,7 @@ from kosenctfkit.logging import logger
 from kosenctfkit.utils import get_login_user
 from kosenctfkit.api import get_challenges, get_users, get_teams, get_user_and_team
 from kosenctfkit.blueprints import challenge, team, user
+from kosenctfkit.uploader import uploader
 
 app = Flask(__name__, static_url_path="")
 app.register_blueprint(challenge)
@@ -54,5 +55,7 @@ if __name__ == "__main__":
     init_db(app)
     if "WEBHOOK_URL" in app.config:
         logger.init(app.config["WEBHOOK_URL"])
+
+    uploader.init(app.static_folder + "/icons/", "/icons/")
 
     app.run()

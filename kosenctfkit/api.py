@@ -8,25 +8,11 @@ def get_user_and_team(user, valid_only):
             "name": user.name,
             "team": user.team.name if user.team else None,
             "team_id": user.team.id if user.team else None,
-            "score": user.getScore(valid_only=valid_only),
-            "solved": [c.id for c in user.getSolves(valid_only=valid_only)],
         },
         {
             "id": user.team.id if user.team else None,
             "name": user.team.name if user.team else None,
             "token": user.team.token if user.team else None,
-            "members": [m.id for m in user.team.members] if user.team else [],
-            "score": user.team.getScore(valid_only=valid_only)
-            if user.team
-            else user.getScore(valid_only=valid_only),
-            "solved": [
-                c.id
-                for c in (
-                    user.team.getSolves(valid_only=valid_only)
-                    if user.team
-                    else user.getSolves(valid_only=valid_only)
-                )
-            ],
         },
     )
 
@@ -71,6 +57,7 @@ def get_users(valid_only):
         ret[u.id] = {
             "id": u.id,
             "name": u.name,
+            "icon": u.icon,
             "team": u.team.name if u.team else None,
             "team_id": u.team.id if u.team else None,
             "score": u.getScore(valid_only=valid_only),
