@@ -12,6 +12,8 @@
                         .card-text
                             p(v-html="chal.description")
                             p.text-right {{chal.author}}
+                            p(v-if="chal.attachments" v-for="a in chal.attachments")
+                                a.btn.btn-primary(target="_blank" :href='a') {{ basename(a) }}
                         form(@submit.prevent="submit")
                             input(type="hidden" name="id" :value="chal.id")
                             .input-group.mb-3
@@ -31,7 +33,10 @@ export default Vue.extend({
             let json = {}
             data.forEach((v, k) => {json[k] = v})
             this.$store.dispatch('submit', json)
-        }
+        },
+        basename(p) {
+            return p.split('/').pop()
+        },
     },
     computed: {
         categories() {

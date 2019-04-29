@@ -1,0 +1,10 @@
+{
+    "name": "Download",
+    "completed": true,
+    "base_score": 1000,
+    "author": "theoldmoon0602",
+    "testers": [],
+    "description": "<p>Download it.</p>",
+    "flag": "KosenCTF{download}",
+    "category": "reversing"
+}

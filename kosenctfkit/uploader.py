@@ -1,4 +1,5 @@
 import os
+import shutil
 from base64 import b64decode
 from secrets import token_hex
 from io import BytesIO
@@ -6,14 +7,13 @@ from PIL import Image
 
 
 class Uploader:
-    def init(self, directory, url_root):
-        self.directory = directory
-        self.url_root = url_root
+    def init(self, app):
+        self.icon_dir = os.path.join(app.static_folder, app.config["ICON_DIR"])
+        self.static_dir = os.path.join(app.static_folder, app.config["STATIC_DIR"])
 
     def upload_icon(self, icon_b64):
         filename = token_hex(16) + ".png"
-        filepath = os.path.join(self.directory, filename)
-        fileurl = os.path.join(self.url_root, filename)
+        filepath = os.path.join(self.icon_dir, filename)
         try:
             icon_data = b64decode(icon_b64)
             icon = Image.open(BytesIO(icon_data))
@@ -23,7 +23,18 @@ class Uploader:
             print(e)
             return None
 
-        return fileurl
+        return filepath
+
+    def upload_attachment(self, name):
+        basename = os.path.basename(name)
+        path = os.path.join(self.static_dir, basename)
+        try:
+            shutil.copyfile(name, path)
+        except Exception as e:
+            print(e)
+            return None
+
+        return path
 
 
 uploader = Uploader()

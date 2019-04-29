@@ -128,7 +128,7 @@ class Challenge(db.Model):
     base_score = db.Column(db.Integer, nullable=False)
     score = db.Column(db.Integer, nullable=False)
     is_open = db.Column(db.Boolean, nullable=False, default=False)
-    attachements = db.relationship("Attachment", backref="challenge", lazy="dynamic")
+    attachments = db.relationship("Attachment", backref="challenge", lazy="dynamic")
     submissions = db.relationship("Submission", backref="challenge", lazy="dynamic")
 
     @property
@@ -151,7 +151,7 @@ class Challenge(db.Model):
 
 
 class Attachment(db.Model):
-    __tablename__ = "attachements"
+    __tablename__ = "attachments"
 
     id = db.Column(db.Integer, primary_key=True)
     url = db.Column(db.String, nullable=False)

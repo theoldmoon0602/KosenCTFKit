@@ -7,3 +7,5 @@ class DefaultConfig:
     WEBHOOK_URL = (
         "https://hooks.slack.com/services/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"
     )
+    STATIC_DIR = "static"
+    ICON_DIR = "icons"

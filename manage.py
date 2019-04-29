@@ -1,7 +1,11 @@
-from kosenctfkit.models import db, init_db, Config, User, Challenge
+from kosenctfkit.models import db, init_db, Config, User, Challenge, Attachment
+from kosenctfkit.app import init_app
+from kosenctfkit.uploader import uploader
 from config import DefaultConfig
 from flask import Flask
+import tarfile
 import os
+import shutil
 import sys
 import json
 import pytz
@@ -18,9 +22,9 @@ open-register               --- Open Registration
 open-ctf                    --- Open CTF & Registration
 close-register              --- Close Registration
 close-ctf                   --- Close CTF & Registration
-set-challenges <challenges> --- Set Challenges as Hidden
+set-challenges <directory>  --- Set Challenges as Hidden
 list-challenges             --- List Challenges
-open-challenge [name]       --- Open Challenge by Name
+open-challenges [name]      --- Open Challenge by Name
 recalc-challenges           --- Recalculate all Scores of Challenges
 """
 
@@ -29,13 +33,19 @@ if len(sys.argv) <= 1:
     exit()
 
 app = Flask(__name__, static_url_path="")
-app.config.from_object(DefaultConfig)
-init_db(app)
+init_app(app, DefaultConfig)
 
 
-def open_challenge(challenges):
+def normalize(f):
+    return f.replace(" ", "_").lower()
+
+
+def open_challenges(challenges):
     with app.app_context():
-        cs = Challenge.query.filter(Challenge.name.in_(challenges)).all()
+        if challenges:
+            cs = Challenge.query.filter(Challenge.name.in_(challenges)).all()
+        else:
+            cs = Challenge.query.all()
         if len(cs) == 0:
             print("[-]Nothing to open")
             exit()
@@ -76,9 +86,16 @@ def set_challenges(directory):
         category = challenge_data["category"]
 
         # TODO: BUILD, ATTACHMENTS, DEPLOYMENT
-
         if not completed:
             continue
+
+        n = normalize(name)
+        disttar = "{}.tar.gz".format(n)
+        distfiles = os.path.join(d, "distfiles")
+        if os.path.isdir(distfiles):
+            print("[+]archive attachments")
+            with tarfile.open(disttar, "w:gz") as tar:
+                tar.add(distfiles, arcname=n)
 
         with app.app_context():
             c = Challenge.query.filter(Challenge.name == name).first()
@@ -96,7 +113,22 @@ def set_challenges(directory):
 
             db.session.add(c)
             db.session.commit()
-        print("[+]add {}".format(name))
+
+            if os.path.exists(disttar):
+                print("[+]upload attachment")
+                path = uploader.upload_attachment(disttar)
+                if path:
+                    a = Attachment.query.filter(Attachment.url == path).first()
+                    if not a:
+                        a = Attachment()
+                    a.challenge_id = c.id
+                    a.url = path
+                    db.session.add(a)
+                    db.session.commit()
+                print("[+]remove attachment")
+                os.remove(disttar)
+
+        print("[+]set {}".format(name))
     print("[+]Done")
 
 
@@ -189,11 +221,8 @@ elif sys.argv[1] == "close-ctf":
         db.session.commit()
     print("[+]Done")
 
-elif sys.argv[1] == "open-challenge":
-    if len(sys.argv) <= 2:
-        print(help)
-        exit()
-    open_challenge(sys.argv[2:])
+elif sys.argv[1] == "open-challenges":
+    open_challenges(sys.argv[2:])
 
 elif sys.argv[1] == "list-challenges":
     list_challenges()
