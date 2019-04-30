@@ -5,8 +5,7 @@ export default {
         id: null,
         name: null,
         team: null,
-        score: 0,
-        solved: [],
+        team_id: null,
     },
     getters: {
         isLogin(state) {

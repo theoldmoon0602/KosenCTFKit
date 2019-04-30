@@ -43,8 +43,10 @@ export default Vue.extend({
             return this.$store.getters.getChallengesWithCategory;
         },
         solved() {
-            return this.$store.getters.getTeamSolved;
-        }
+            let team_id = this.$store.getters.getUser.team_id;
+            let teams = this.$store.getters.getTeams;
+            return teams[team_id].solved
+        },
     }
 })
 </script>

@@ -12,6 +12,7 @@ sqlalchemy = "*"
 bcrypt = "*"
 pillow = "*"
 requests = "*"
+pytz = "*"
 
 [requires]
 python_version = "3.7"

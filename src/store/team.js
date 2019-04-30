@@ -5,16 +5,10 @@ export default {
         id: undefined,
         name: '',
         token: '',
-        members: [],
-        score: 0,
-        solved: [],
     },
     getters: {
         getTeam(state) {
             return state
-        },
-        getTeamSolved(state) {
-            return state.solved
         },
     },
     mutations: {
