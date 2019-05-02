@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm.exc import DetachedInstanceError
 from sqlalchemy import desc
 from datetime import datetime
 import bcrypt
@@ -141,8 +142,11 @@ class Challenge(db.Model):
 
     @property
     def solve_num(self):
-        count = self.submissions.filter(Submission.is_valid == True).count()
-        return count
+        try:
+            count = self.submissions.filter(Submission.is_valid == True).count()
+            return count
+        except DetachedInstanceError:
+            return 0
 
     def recalc_score(self, expr):
         new_score = int(eval(expr, {"N": self.solve_num, "V": self.base_score}))

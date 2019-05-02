@@ -13,6 +13,7 @@ bcrypt = "*"
 pillow = "*"
 requests = "*"
 pytz = "*"
+pyyaml = "*"
 
 [requires]
 python_version = "3.7"

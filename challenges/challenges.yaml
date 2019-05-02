@@ -1,0 +1,9 @@
+challenges:
+  Download:
+    category: reversing
+    author: theoldmoon0602
+    flag: KosenCTF{download}
+    description: "<p>Download it.</p>"
+    completed: True
+    testers: []
+    base_score: 1000

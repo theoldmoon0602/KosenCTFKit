@@ -10,6 +10,7 @@ class Uploader:
     def init(self, app):
         self.icon_dir = os.path.join(app.static_folder, app.config["ICON_DIR"])
         self.static_dir = os.path.join(app.static_folder, app.config["STATIC_DIR"])
+        self.static_url_path = app.static_url_path
 
     def upload_icon(self, icon_b64):
         filename = token_hex(16) + ".png"
@@ -34,7 +35,7 @@ class Uploader:
             print(e)
             return None
 
-        return path
+        return os.path.join(self.static_url_path, basename)
 
 
 uploader = Uploader()
