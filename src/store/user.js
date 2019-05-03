@@ -9,7 +9,7 @@ export default {
     },
     getters: {
         isLogin(state) {
-            return state.id >= 0
+            return Number.isInteger(state.id)
         },
         getUser(state) {
             return state
