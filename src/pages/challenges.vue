@@ -2,8 +2,8 @@
     div
         .rows(v-for="c in categories")
             h1 {{ c[0].category }}
-            .card(v-for="chal in c" v-bind:class="{'solved' : solved.includes(chal.id)}")
-                h5.card-header
+            .card(v-for="chal in c" v-bind:class="{'border-success' : solved.includes(chal.id)}")
+                h5.card-header(v-bind:class="{'bg-success': solved.includes(chal.id)}")
                     a.trigger(data-toggle="collapse"  aria-expanded="true" :data-target="'#chal-' + chal.id" :aria-controls="'chal-'+chal.id")
                         |{{ chal.name }}
                         small.small [{{ chal.score }}] - {{ chal.solved }} solved
