@@ -7,6 +7,7 @@ import axios from 'axios'
 
 import 'bootstrap'
 import 'bootstrap/dist/css/bootstrap.css'
+import './bootstrap.css'
 
 
 let vue = new Vue({
