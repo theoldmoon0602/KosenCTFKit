@@ -4,20 +4,20 @@
         form(@submit.prevent="registerTeam")
             .form-group
                 label.d-block(for="teamname") teamname
-                input#teamname(type="text", v-model="teamname", required, placeholder="ESCape", class="form-control")
+                input#teamname(type="text" v-model="teamname" required placeholder="ESCape" class="form-control")
             button.btn.btn-primary(type="submit") Register Team
 
         h3.h3 User Registration
         form(@submit.prevent="registerUser")
             .form-group
                 label.d-block(for="teamtoken") teamtoken
-                input#teamtoken(type="text", v-model="teamtoken", required, class="form-control")
+                input#teamtoken(type="text" v-model="teamtoken" required class="form-control")
             .form-group
                 label.d-block(for="username") username
-                input#username(type=text, v-model="username", required, placeholder="MAKABEE", class="form-control")
+                input#username(type="text" v-model="username" required placeholder="MAKABEE" class="form-control")
             .form-group
                 label.d-block(for="password") password
-                input#password(type="password", v-model="password", required, class="form-control")
+                input#password(type="password" v-model="password" required class="form-control")
             button.btn.btn-primary(type="submit") Register User
 
 </template>

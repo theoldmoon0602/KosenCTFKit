@@ -101,6 +101,14 @@ h1,h2,h3,h4 {
 .icon {
     max-width: 256px;
 }
+input[type=text], input[type=password] {
+    &:focus {
+        background-color: #fff;
+    }
+    background-color: #fff;
+    text-align: center;
+    border-radius: 0;
+}
 </style>
 
 <style scoped>

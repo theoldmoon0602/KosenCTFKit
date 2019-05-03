@@ -3,10 +3,10 @@
         form.col-12.col-lg-8.offset-lg-2(@submit.prevent="login")
             .form-group
                 label.d-block(for="username") username
-                input#username(type=text, v-model="username", required, placeholder="MAKABEE", class="form-control")
+                input#username(type="text" v-model="username" required placeholder="MAKABEE" class="form-control")
             .form-group
                 label.d-block(for="password") password
-                input#password(type="password", v-model="password", required, class="form-control")
+                input#password(type="password" v-model="password" required class="form-control")
             button.btn.btn-primary(type="submit") Login
 
 
