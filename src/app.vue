@@ -32,8 +32,12 @@
 
         .alert.alert-danger(v-if="!isOpen") CTF IS CLOSED
         .alert.alert-danger(v-if="isFrozen") SCOREBOARD IS FROZEN
-        .alert.alert-dismissible.alert-info(v-for="m in messages") {{ m }}
+        .alert.alert-dismissible.alert-info.fade.show(v-for="m in messages") {{ m }}
+            button.close(type="button" data-dismiss="alert" aria-label="close")
+                span(aria-hidden="true") &times;
         .alert.alert-dismissible.alert-danger(v-for="e in errors") {{ e }}
+            button.close(type="button" data-dismiss="alert" aria-label="close")
+                span(aria-hidden="true") &times;
         router-view
 </template>
 
@@ -96,5 +100,19 @@ h1,h2,h3,h4 {
 }
 .icon {
     max-width: 256px;
+}
+</style>
+
+<style scoped>
+@media (min-width: 768px) {
+    #navbar .router-link-exact-active::before {
+        content: "";
+        background-image: url(./penguin.png);
+        background-size: cover;
+        display: inline-block;
+        width: 1.5em;
+        height: 1.5em;
+        float: left;
+    }
 }
 </style>

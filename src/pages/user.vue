@@ -12,6 +12,7 @@
             img.icon(:src="user.icon" :alt="user.name")
 
         div(v-if="loginUser && user.id == loginUser.id")
+            h5.h5 Update Password
             form(@submit.prevent="updatePassword")
                 .form-group
                     label.d-block(for="current_password") current password
@@ -21,10 +22,10 @@
                     input#new_password(type="password" name="new_password" required class="form-control")
                 button.btn.btn-primary(type="submit") Update Password
 
-            form(@submit.prevent="uploadIcon")
-                .form-group
-                    input(type="file" accept="image/*" required @change="selectIcon")
-                button.btn.btn-primary(type="submit") Upload Icon
+            h5.h5 Upload Icon
+            .custom-file
+                input.custom-file-input#icon(type="file" accept="image/*" required @change="selectIcon")
+                label.custom-file-label(for="icon") Upload Icon
 
 
 
@@ -42,11 +43,6 @@
 import Vue from 'vue/dist/vue.js'
 import axios from 'axios'
 export default Vue.extend({
-    data () {
-        return {
-            icon: ''
-        }
-    },
     methods: {
         challenge(cid) {
             let challenges = this.$store.getters.getChallenges;
@@ -66,17 +62,13 @@ export default Vue.extend({
                 this.$store.dispatch('addError', 'Not an Image file')
                 return
             }
-            
             let fileReader = new FileReader();
             fileReader.addEventListener("load", () => {
-                this.icon = fileReader.result;
-                this.icon = this.icon.split(',')[1]
+                let icon = fileReader.result;
+                this.$store.dispatch('uploadIcon', icon.split(',')[1]);
             }, false)
             fileReader.readAsDataURL(f);
         },
-        uploadIcon() {
-            this.$store.dispatch('uploadIcon', this.icon);
-        }
     },
     computed: {
         user() {
