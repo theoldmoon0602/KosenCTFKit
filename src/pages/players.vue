@@ -10,7 +10,10 @@
             tbody
                 tr(v-for="u in ranking")
                     td
-                        router-link(:to="'/user/'+u.id") {{ u.name }}
+                        router-link(:to="'/user/'+u.id" v-if="u.icon")
+                            img(:src="u.icon")
+                            | {{ u.name }}
+                        router-link(:to="'/user/'+u.id" v-else) {{ u.name }}
                     td
                         router-link(:to="'/team/'+u.team_id" v-if="u.team") {{ u.team }}
                     td {{ u.score }}
@@ -48,3 +51,10 @@ export default Vue.extend({
 })
 </script>
 
+<style scoped>
+img {
+    height: 1.2em;
+    width: 1.2em;
+    vertical-align: middle;
+}
+</style>
