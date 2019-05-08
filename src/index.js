@@ -1,4 +1,4 @@
-import Vue from 'vue/dist/vue.js'
+import Vue from 'vue'
 import App from './app.vue'
 import router from './router.js'
 import store from './store'

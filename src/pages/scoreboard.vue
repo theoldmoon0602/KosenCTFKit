@@ -17,7 +17,7 @@
 </template>
 
 <script>
-import Vue from 'vue/dist/vue.js'
+import Vue from 'vue'
 import axios from 'axios'
 export default Vue.extend({
     computed: {
