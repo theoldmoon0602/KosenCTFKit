@@ -256,6 +256,10 @@ def challenge_add(ctx, only):
         db.session.add(chall)
         db.session.commit()
 
+        # delete current attachements
+        chall.attachments.delete()
+        db.session.commit()
+
         # archive attachement files
         distdir = ctx.obj["dir"] / c.normal_name / "distfiles"  # type: Path
         disttar = "{}.tar.gz".format(c.normal_name)
@@ -276,7 +280,7 @@ def challenge_add(ctx, only):
             continue
 
         # save to database
-        a = Attachment.query.filter(Attachment.url == path).first() or Attachment()
+        a = Attachment()
         a.challenge_id = chall.id
         a.url = path
         db.session.add(a)
@@ -306,6 +310,7 @@ def challenge_open(ctx, only, close):
         chall = c.column
         if chall is None:
             print("[-] {} is not in the Database".format(c.name))
+            continue
         chall.is_open = not close
         db.session.add(chall)
         db.session.commit()
