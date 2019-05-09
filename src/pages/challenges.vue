@@ -2,8 +2,8 @@
     div
         .rows(v-for="c in categories")
             h1 {{ c[0].category }}
-            .card(v-for="chal in c" v-bind:class="{'border-success' : solved.includes(chal.id)}")
-                h5.card-header(v-bind:class="{'bg-success': solved.includes(chal.id)}")
+            .card(v-for="chal in c" v-bind:class="{'border-success' : is_solved(chal.id)}")
+                h5.card-header(v-bind:class="{'bg-success': is_solved(chal.id)}")
                     a.trigger(data-toggle="collapse"  aria-expanded="true" :data-target="'#chal-' + chal.id" :aria-controls="'chal-'+chal.id")
                         |{{ chal.name }}
                         small.small [{{ chal.score }}] - {{ chal.solved }} solved
@@ -37,15 +37,15 @@ export default Vue.extend({
         basename(p) {
             return p.split('/').pop()
         },
+        is_solved(challenge_id) {
+            let team_id = this.$store.getters.getUser.team_id;
+            let teams = this.$store.getters.getTeams;
+            return teams[team_id].solved.includes(challenge_id);
+        },
     },
     computed: {
         categories() {
             return this.$store.getters.getChallengesWithCategory;
-        },
-        solved() {
-            let team_id = this.$store.getters.getUser.team_id;
-            let teams = this.$store.getters.getTeams;
-            return teams[team_id].solved
         },
     }
 })
