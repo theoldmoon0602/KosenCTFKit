@@ -38,7 +38,8 @@ def update():
     }
     if user:
         userinfo, teaminfo = get_user_and_team(user, valid_only=valid_only)
-        r["challenges"] = get_challenges()
         r["user"] = userinfo
         r["team"] = teaminfo
+    if user and (config.ctf_open or config.ctf_frozen):
+        r["challenges"] = get_challenges()
     return jsonify(r)
