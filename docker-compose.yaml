@@ -10,7 +10,9 @@ services:
                   - ./ctf_config.yaml:/app/ctf_config.yaml
                   - ./config.py:/app/config.py
                 command: >
-                  sh -c "python3 manage.py init ctf_config.yaml
-                  && gunicorn app:app -b 0.0.0.0:5000"
+                  sh -c "
+                  python3 manage.py init ctf_config.yaml &&
+                  python3 manage.py challenge add &&
+                  gunicorn app:app -b 0.0.0.0:5000"
 
 

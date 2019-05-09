@@ -3,7 +3,7 @@ from kosenctfkit.models import db, Config, Team
 from kosenctfkit.utils import error, login_required
 
 
-team = Blueprint("team", __name__)
+team = Blueprint("team_", __name__)
 
 
 @team.route("/register-team", methods=["POST"])

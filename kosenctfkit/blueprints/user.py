@@ -5,7 +5,7 @@ from kosenctfkit.logging import logger
 from kosenctfkit.uploader import uploader
 
 
-user = Blueprint("user", __name__)
+user = Blueprint("user_", __name__)
 
 
 @user.route("/register", methods=["POST"])

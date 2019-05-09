@@ -3,7 +3,7 @@ from kosenctfkit.models import db, Config, Challenge, Submission, Team
 from kosenctfkit.utils import error, login_required, ctf_open_required
 from kosenctfkit.logging import logger
 
-challenge = Blueprint("challenge", __name__)
+challenge = Blueprint("challenge_", __name__)
 
 
 @challenge.route("/submit", methods=["POST"])

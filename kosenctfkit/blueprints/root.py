@@ -9,7 +9,7 @@ from kosenctfkit.utils import (
 )
 
 
-root = Blueprint("root", __name__)
+root = Blueprint("root_", __name__)
 
 
 @root.route("/update")
