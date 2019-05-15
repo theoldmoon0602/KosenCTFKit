@@ -34,6 +34,7 @@ class User(db.Model):
             db.session.query(Challenge)
             .join(Submission, Challenge.id == Submission.challenge_id)
             .filter(
+                Challenge.is_open == True,
                 Submission.is_valid == True
                 if valid_only
                 else Submission.is_correct == True,
@@ -79,6 +80,7 @@ class Team(db.Model):
         solves = (
             Challenge.query.join(Submission)
             .filter(
+                Challenge.is_open == True,
                 Submission.challenge_id == Challenge.id,
                 Submission.is_valid == True
                 if valid_only
