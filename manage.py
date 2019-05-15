@@ -263,28 +263,41 @@ def challenge_add(ctx, only):
         # archive attachement files
         distdir = ctx.obj["dir"] / c.normal_name / "distfiles"  # type: Path
         disttar = "{}.tar.gz".format(c.normal_name)
-        if not distdir.exists():
-            continue
+        if distdir.exists():
+            # archive
+            with tarfile.open(disttar, "w:gz") as tar:
+                tar.add(distdir, arcname=c.normal_name)
 
-        # archive
-        with tarfile.open(disttar, "w:gz") as tar:
-            tar.add(distdir, arcname=c.normal_name)
+            # upload
+            path = uploader.upload_attachment(disttar)
 
-        # upload
-        path = uploader.upload_attachment(disttar)
+            # remove
+            os.remove(disttar)
 
-        # remove
-        os.remove(disttar)
-        if not path:
-            print("[-] failed to upload attachment")
-            continue
+            if not path:
+                print("[-] failed to upload attachment")
 
-        # save to database
-        a = Attachment()
-        a.challenge_id = chall.id
-        a.url = path
-        db.session.add(a)
-        db.session.commit()
+            # save to database
+            a = Attachment()
+            a.challenge_id = chall.id
+            a.url = path
+            db.session.add(a)
+            db.session.commit()
+
+        # ditto
+        distdir = ctx.obj["dir"] / c.normal_name / "distarchive"  # type: Path
+        for distfile in distdir.glob("*"):
+            path = uploader.upload_attachment(distfile)
+            if not path:
+                print("[-] failed to upload attachment")
+                continue
+
+            # save to database
+            a = Attachment()
+            a.challenge_id = chall.id
+            a.url = path
+            db.session.add(a)
+            db.session.commit()
 
     # print
     for c in ctx.obj["challs"].list():  # type: Chall
