@@ -83,7 +83,12 @@ def get_challenges():
             "testers": c.testers,
             "score": c.score,
             "solved": c.solve_num,
-            "description": c.description,
+            "description": c.description.replace(
+                "{{host}}",
+                current_app.config["CATEGORY_SERVERS"].get(c.category, {"host": ""})[
+                    "host"
+                ],
+            ),
             "attachments": [as_url(current_app, a.url) for a in c.attachments.all()],
         }
     return ret
