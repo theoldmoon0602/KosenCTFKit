@@ -408,7 +408,8 @@ def challenge_check(ctx, challenge):
     try:
         env = dict(os.environ)
         host = app.config["CATEGORY_SERVERS"].get(c.category)
-        env.update({"CHALLENGE_HOST": host["host"]})
+        if host:
+            env.update({"CHALLENGE_HOST": host["host"]})
         result = subprocess.check_output(
             ["bash", "-c", "bash solve.bash"], cwd=workspace, env=env
         )
