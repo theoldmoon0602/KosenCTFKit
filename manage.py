@@ -406,25 +406,23 @@ def challenge_check(ctx, challenge):
 
     # run solver and check output
     try:
+        env = dict(os.environ)
+        host = app.config["CATEGORY_SERVERS"].get(c.category)
+        if host:
+            env.update({"CHALLENGE_HOST": host["host"]})
         result = subprocess.check_output(
-            ["bash", "solve.bash"],
-            cwd=workspace,
-            env={
-                "CHALLENGE_HOST": app.config["CATEGORY_SERVERS"].get(
-                    c.category, {"host": ""}
-                )["host"]
-            },
+            ["bash", "-c", "bash solve.bash"], cwd=workspace, env=env
         )
-        result = result.decode().strip()
     except Exception as e:
-        result = ""
+        print(e)
+        result = b""
         pass
 
     # remove workspace
     shutil.rmtree(workspace)
 
     # check if the challenge is solved
-    if c.flag in result:
+    if c.flag.encode() in result:
         print("[+] challenge solved")
     else:
         print("[-] challenge couldn't be solved")
