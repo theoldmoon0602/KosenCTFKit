@@ -13,13 +13,17 @@ export default {
     },
     mutations: {
         addMessage(state, message) {
-            state.messages.push(message)
+            if (!state.messages.includes(message)) {
+                state.messages.push(message)
+            }
         },
         deleteMessage(state, message) {
             state.messages = state.messages.filter(m => m != message)
         },
         addError(state, error) {
-            state.errors.push(error)
+            if (!state.errors.includes(error)) {
+                state.errors.push(error)
+            }
         },
         deleteError(state, error) {
             state.errors = state.errors.filter(e => e != error)
