@@ -2,6 +2,8 @@ import yaml
 import click
 import tarfile
 import os
+import shutil
+import subprocess
 from pathlib import Path
 from flask import Flask
 from kosenctfkit.models import db, Config, User, Challenge, Attachment
@@ -77,6 +79,11 @@ class Challs:
                 continue
             c.column = Challenge.query.filter(Challenge.name == c.name).first()
             yield c
+
+    def get(self, name):
+        c = self.cs[name]
+        c.column = Challenge.query.filter(Challenge.name == c.name).first()
+        return c
 
 
 def with_appcontext(f):
@@ -359,6 +366,69 @@ def challenge_recalc(ctx):
             continue
         print(c.dump())
     print("[+]Done")
+
+
+@challenge.command("check")
+@with_appcontext
+@click.argument("challenge")
+@click.pass_context
+def challenge_check(ctx, challenge):
+    """run a check script for the challenge"""
+    c = ctx.obj["challs"].get(challenge)
+    workspace = Path("workspace")
+    solutiondir = ctx.obj["dir"] / c.normal_name / "solution"
+    solutionscript = solutiondir / "solve.bash"
+    distdir = ctx.obj["dir"] / c.normal_name / "distfiles"
+    distarchive_dir = ctx.obj["dir"] / c.normal_name / "distarchive"
+
+    if not solutiondir.exists():
+        print("[-] no solution for the challenge: {}".format(c.name))
+        exit(1)
+
+    if not solutionscript.exists():
+        print("[-] no solution script for the challenge: {}".format(c.name))
+        exit(1)
+
+    # create workspace
+    shutil.copytree(solutiondir, workspace)
+
+    # copy distributed files to solution directory
+    if distdir.exists():
+        for f in distdir.iterdir():
+            if f.is_dir():
+                shutil.copytree(f, workspace / f.name)
+            else:
+                shutil.copy(f, workspace)
+    if distarchive_dir.exists():
+        for f in distarchive_dir.glob("*.tar.gz"):
+            with tarfile.open(f, "r:gz") as tar:
+                tar.extractall(path=workspace)
+
+    # run solver and check output
+    try:
+        result = subprocess.check_output(
+            ["bash", "solve.bash"],
+            cwd=workspace,
+            env={
+                "CHALLENGE_HOST": app.config["CATEGORY_SERVERS"].get(
+                    c.category, {"host": ""}
+                )["host"]
+            },
+        )
+        result = result.decode().strip()
+    except Exception as e:
+        result = ""
+        pass
+
+    # remove workspace
+    shutil.rmtree(workspace)
+
+    # check if the challenge is solved
+    if c.flag in result:
+        print("[+] challenge solved")
+    else:
+        print("[-] challenge couldn't be solved")
+        exit(1)
 
 
 if __name__ == "__main__":
