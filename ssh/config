@@ -1,0 +1,5 @@
+Host example
+    HostName localhost
+    User ctf
+    Port 22
+    # IdentityFile ~/.ssh/examplekey

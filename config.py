@@ -10,7 +10,7 @@ class DefaultConfig:
     STATIC_DIR = "static"
     ICON_DIR = "icons"
     CATEGORY_SERVERS = {
-        "crypto": {"host": "localhost", "ssh_config": "localdocker"},
-        "web": {"host": "localhost", "ssh_config": "localdocker"},
-        "pwn": {"host": "localhost", "ssh_config": "localdocker"},
+        "crypto": {"host": "localhost", "ssh_config": "example"},
+        "web": {"host": "localhost", "ssh_config": "example"},
+        "pwn": {"host": "localhost", "ssh_config": "example"},
     }
