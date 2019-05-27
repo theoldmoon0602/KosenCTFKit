@@ -1,6 +1,8 @@
+import Vue from 'vue';
+
 export default {
     state: {
-        name: '',
+        name: undefined,
         ctf_open: false,
         ctf_frozen: false,
         register_open: false,
@@ -40,9 +42,13 @@ export default {
             state.register_open = info.register_open
         },
         setUsers(state, users) {
-            Object.assign(state.users, users)
+            Object.assign(state.users, [])
+            for (let [i, user] in users) {
+                Vue.set(state.users, i, user);
+            }
         },
         setTeams(state, teams) {
+            Object.assign(state.users, [])
             Object.assign(state.teams, teams)
         },
         setScoreboard(state, scoreboard) {

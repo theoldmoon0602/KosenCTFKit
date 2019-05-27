@@ -38,7 +38,7 @@ export default Vue.extend({
             return p.split('/').pop()
         },
         is_solved(challenge_id) {
-            let team_id = this.$store.getters.getUser.team_id;
+            let team_id = this.$store.getters.getCurrentUser.team_id;
             let teams = this.$store.getters.getTeams;
             return teams[team_id].solved.includes(challenge_id);
         },

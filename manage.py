@@ -459,8 +459,10 @@ def challenge_deploy(ctx, challenge, check):
     challenge_dir = ctx.obj["dir"] / c.normal_name
     compose_file = challenge_dir / "docker-compose.yaml"
     if not compose_file.exists():
-        print("[-] challenge dosn't have a docker-compose.yaml")
-        return
+        compose_file = challenge_dir / "docker-compose.yml"
+        if not compose_file.exists():
+            print("[-] challenge dosn't have a docker-compose.ya?ml")
+            return
 
     # check server settings
     server = app.config["CATEGORY_SERVERS"].get(c.category)
@@ -520,8 +522,10 @@ def challenge_deploy(ctx, challenge):
     challenge_dir = ctx.obj["dir"] / c.normal_name
     compose_file = challenge_dir / "docker-compose.yaml"
     if not compose_file.exists():
-        print("[-] challenge dosn't have a docker-compose.yaml")
-        return
+        compose_file = challenge_dir / "docker-compose.yml"
+        if not compose_file.exists():
+            print("[-] challenge dosn't have a docker-compose.ya?ml")
+            return
 
     # check server settings
     server = app.config["CATEGORY_SERVERS"].get(c.category)

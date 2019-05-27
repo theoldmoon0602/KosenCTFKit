@@ -1,18 +1,20 @@
 version: '3'
 services:
-        kosenctfkit:
-                build: ./
-                restart: always
-                ports:
-                  - 4000:5000
-                volumes:
-                  - ./challenges:/app/challenges
-                  - ./ctf_config.yaml:/app/ctf_config.yaml
-                  - ./config.py:/app/config.py
-                command: >
-                  sh -c "
-                  python3 manage.py init ctf_config.yaml &&
-                  python3 manage.py challenge add &&
-                  gunicorn app:app -b 0.0.0.0:5000"
+    kosenctfkit:
+        build: ./
+        restart: always
+        ports:
+            - 4000:5000
+        volumes:
+            - ./challenges:/app/challenges
+            - ./ctf_config.yaml:/app/ctf_config.yaml
+            - ./config.py:/app/config.py
+            - ./ssh:/root/.ssh
+        command: >
+            sh -c "
+            chmod -R 600 /root/.ssh;
+            python3 manage.py init ctf_config.yaml &&
+            python3 manage.py challenge add &&
+            gunicorn app:app -b 0.0.0.0:5000"
 
 
