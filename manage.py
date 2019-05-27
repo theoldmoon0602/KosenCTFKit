@@ -247,17 +247,19 @@ def challenge_list(ctx, all):
 @challenge.command("add")
 @with_appcontext
 @click.pass_context
-@click.option("--only", help="challenge names to add separated with ,", default="")
-def challenge_add(ctx, only):
+@click.argument("challenges", nargs=-1)
+@click.option("--all", help="add all challenges", is_flag=True)
+def challenge_add(ctx, challenges, all):
     """add challenges to database"""
-    only = [n for n in only.split(",") if n]
-
+    added = []
     config = Config.get()
 
-    # commit
     for c in ctx.obj["challs"].list():  # type: Chall
-        if only and c.name not in only:
+        # filter
+        if not all and c.name not in challenges:
             continue
+
+        # commit
         chall = c.column or Challenge()
         c.setChallenge(chall, config.score_expr)
 
@@ -307,10 +309,10 @@ def challenge_add(ctx, only):
             db.session.add(a)
             db.session.commit()
 
+        added.append(c)
+
     # print
-    for c in ctx.obj["challs"].list():  # type: Chall
-        if only and c.name not in only:
-            continue
+    for c in added:  # type: Chall
         print(c.dump())
     print("[+]Done")
 
@@ -318,28 +320,31 @@ def challenge_add(ctx, only):
 @challenge.command("open")
 @with_appcontext
 @click.pass_context
+@click.argument("challenges", nargs=-1)
+@click.option("--all", help="open all challenges", is_flag=True)
 @click.option("--close", help="close instead to open", is_flag=True)
-@click.option("--only", help="challenge names to open separated with ,", default="")
-def challenge_open(ctx, only, close):
+def challenge_open(ctx, challenges, all, close):
     """open challenges"""
-    only = [n for n in only.split(",") if n]
+    opened = []
 
     # commit
     for c in ctx.obj["challs"].list():  # type: Chall
-        if only and c.name not in only:
+        if not all and c.name not in challenges:
             continue
+
+        # check the challenge is in DB
         chall = c.column
         if chall is None:
             print("[-] {} is not in the Database".format(c.name))
             continue
+
         chall.is_open = not close
         db.session.add(chall)
         db.session.commit()
+        opened.append(c)
 
     # print
-    for c in ctx.obj["challs"].list():  # type: Chall
-        if only and c.name not in only:
-            continue
+    for c in opened:  # type: Chall
         print(c.dump())
     print("[+]Done")
 
@@ -429,7 +434,7 @@ def check_challenge(challenge, challenge_dir, workspace_name="workspace"):
 @click.pass_context
 def challenge_check(ctx, challenge):
     """run a check script for the challenge"""
-    c = ctx.ob["challs"].get(challenge)
+    c = ctx.obj["challs"].get(challenge)
     if not c:
         print("[-] no such challenge")
         return

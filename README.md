@@ -41,7 +41,7 @@ $ docker-compose exec kosenctfkit python3 manage.py open
 
 ### 問題のデプロイ
 
-注意：複数の問題を一度にデプロイすることはできません
+注意：複数の問題を一度にデプロイすることはできない
 
 ```
 $ docker-compose exec kosenctfkit python3 manage.py challenge deploy <問題名>
@@ -62,10 +62,11 @@ $ docker-compose exec kosenctfkit python3 manage.py challenge check <問題名>
 
 ### 問題の公開
 
-onlyオプションをつけないと全ての問題が公開されてしまいます
+- `--all` オプションを使うと全ての問題を対象にできる
+- `--close` オプションを使うと問題を非公開にできる
 
 ```
-$ docker-compose exec kosenctfkit python3 manage.py challenge open --only="<問題名1>,<問題名2>"
+$ docker-compose exec kosenctfkit python3 manage.py challenge open "<問題名1>" "<問題名2>"
 ```
 
 ### adminとして色々を管理

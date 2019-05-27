@@ -17,11 +17,11 @@ RUN yarn install --production=false
 ADD kosenctfkit /app/kosenctfkit
 ADD src /app/src
 ADD static /app/static
-ADD app.py /app/app.py
-ADD manage.py /app/manage.py
 
 ENV PARCEL_WORKERS=1
 RUN yarn build
 
+ADD app.py /app/app.py
+ADD manage.py /app/manage.py
 ADD ssh /root/.ssh
 RUN chmod -R 0600 /root/.ssh

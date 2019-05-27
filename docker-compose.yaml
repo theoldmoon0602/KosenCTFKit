@@ -12,7 +12,7 @@ services:
         command: >
             sh -c "
             python3 manage.py init ctf_config.yaml &&
-            python3 manage.py challenge add &&
+            python3 manage.py challenge add --all &&
             gunicorn app:app -b 0.0.0.0:5000"
 
 
