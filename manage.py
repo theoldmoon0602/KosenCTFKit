@@ -244,6 +244,28 @@ def challenge_list(ctx, all):
     print("[+]Done")
 
 
+@challenge.command("statistics")
+@with_appcontext
+@click.pass_context
+@click.option("--all", is_flag=True)
+def challenge_statistics(ctx, all):
+    """statistics challenges"""
+    categ_counts = {}
+    completed_count = 0
+    challenge_count = 0
+
+    for c in ctx.obj["challs"].list(all=all):
+        challenge_count += 1
+        if c.completed:
+            completed_count += 1
+        categ_counts[c.category] = categ_counts.get(c.category, 0) + 1
+
+    print("=== Statistics ===")
+    for cat, count in categ_counts.items():
+        print("[+] {}: {} challenges".format(cat, count))
+    print("[+] {}/{} is completed".format(completed_count, challenge_count))
+
+
 @challenge.command("add")
 @with_appcontext
 @click.pass_context
