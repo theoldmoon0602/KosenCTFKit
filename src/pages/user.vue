@@ -62,7 +62,7 @@ export default Vue.extend({
             let fileReader = new FileReader();
             fileReader.addEventListener("load", () => {
                 let icon = fileReader.result;
-                this.$store.dispatch('uploadIcon', icon.split(',')[1]);
+                this.$store.dispatch('uploadIcon', icon.split(',')[1])
             }, false)
             fileReader.readAsDataURL(f);
         },

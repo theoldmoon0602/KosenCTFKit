@@ -1,5 +1,3 @@
-import Vue from 'vue';
-
 export default {
     state: {
         name: undefined,
@@ -42,13 +40,9 @@ export default {
             state.register_open = info.register_open
         },
         setUsers(state, users) {
-            Object.assign(state.users, [])
-            for (let [i, user] in users) {
-                Vue.set(state.users, i, user);
-            }
+            Object.assign(state.users, users)
         },
         setTeams(state, teams) {
-            Object.assign(state.users, [])
             Object.assign(state.teams, teams)
         },
         setScoreboard(state, scoreboard) {

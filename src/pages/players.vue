@@ -34,7 +34,6 @@ export default Vue.extend({
             })
             let rank = 1;
             if (ranking.length > 0) {
-                console.log(ranking)
                 ranking[0].rank = rank;
             }
             for (let i = 1; i < ranking.length; i++) {

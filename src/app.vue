@@ -1,46 +1,50 @@
 <template lang="pug">
     .container
-        div(v-if="ctfname === undefined") LOADING
-        template(v-else)
-            h1.display-4.text-center
-                router-link(to="/") {{ ctfname }}
-            nav.navbar.navbar-expand-md
-                button.navbar-toggler.navbar-light(type="button" data-toggle="collapse" data-target="#navbar" aria-controls="navbar" aria-expand="false")
-                    span.navbar-toggler-icon
-                .collapse.navbar-collapse#navbar
-                    ul.navbar-nav.mr-auto.mt-2.mt-lg-0
-                        li.nav-item
-                            router-link.nav-link(to="/") About
-                        li.nav-item
-                            router-link.nav-link(to="/scoreboard") Scoreboard
-                        li.nav-item
-                            router-link.nav-link(to="/players") Players
-                        template(v-if="login")
+        transition(name="fade")
+            div.loading(v-if="ctfname === undefined")
+                img(src="./penguin.png")
+                p LOADING...
+        transition(name="fade")
+            div(v-if="ctfname")
+                h1.display-4.text-center
+                    router-link(to="/") {{ ctfname }}
+                nav.navbar.navbar-expand-md
+                    button.navbar-toggler.navbar-light(type="button" data-toggle="collapse" data-target="#navbar" aria-controls="navbar" aria-expand="false")
+                        span.navbar-toggler-icon
+                    .collapse.navbar-collapse#navbar
+                        ul.navbar-nav.mr-auto.mt-2.mt-lg-0
                             li.nav-item
-                                router-link.nav-link(to="/challenges") Challenges
-                    ul.navbar-nav
-                        template(v-if="login")
+                                router-link.nav-link(to="/") About
                             li.nav-item
-                                router-link.nav-link(:to="'/user/' + user.id") {{ user.name }}
-                            li.nav-item(v-if="user.team")
-                                router-link.nav-link(:to="'/team/' + user.team_id") {{ user.team }}
+                                router-link.nav-link(to="/scoreboard") Scoreboard
                             li.nav-item
-                                a.nav-link(href="#", @click="logout") Logout
-                        template(v-else)
-                            li.nav-item
-                                router-link.nav-link(to="/login") Login
-                            li.nav-item(v-if="registerOpen")
-                                router-link.nav-link(to="/register") Register
+                                router-link.nav-link(to="/players") Players
+                            template(v-if="login")
+                                li.nav-item
+                                    router-link.nav-link(to="/challenges") Challenges
+                        ul.navbar-nav
+                            template(v-if="login")
+                                li.nav-item
+                                    router-link.nav-link(:to="'/user/' + user.id") {{ user.name }}
+                                li.nav-item(v-if="user.team")
+                                    router-link.nav-link(:to="'/team/' + user.team_id") {{ user.team }}
+                                li.nav-item
+                                    a.nav-link(href="#", @click="logout") Logout
+                            template(v-else)
+                                li.nav-item
+                                    router-link.nav-link(to="/login") Login
+                                li.nav-item(v-if="registerOpen")
+                                    router-link.nav-link(to="/register") Register
 
-            .alert.alert-danger(v-if="!isOpen") CTF IS CLOSED
-            .alert.alert-danger(v-if="isFrozen") SCOREBOARD IS FROZEN
-            .alert.alert-dismissible.alert-info.fade.show(v-for="m in messages") {{ m }}
-                button.close(type="button" data-dismiss="alert" aria-label="close")
-                    span(aria-hidden="true") &times;
-            .alert.alert-dismissible.alert-danger(v-for="e in errors") {{ e }}
-                button.close(type="button" data-dismiss="alert" aria-label="close")
-                    span(aria-hidden="true") &times;
-            router-view
+                .alert.alert-danger(v-if="!isOpen") CTF IS CLOSED
+                .alert.alert-danger(v-if="isFrozen") SCOREBOARD IS FROZEN
+                .alert.alert-dismissible.alert-info.fade.show(v-for="m in messages") {{ m }}
+                    button.close(type="button" data-dismiss="alert" aria-label="close")
+                        span(aria-hidden="true") &times;
+                .alert.alert-dismissible.alert-danger(v-for="e in errors") {{ e }}
+                    button.close(type="button" data-dismiss="alert" aria-label="close")
+                        span(aria-hidden="true") &times;
+                router-view
 </template>
 
 <script>
@@ -57,6 +61,9 @@ export default Vue.extend({
         }, 1000 * 30)
     },
     methods: {
+        hi() {
+            console.log('hi')
+        },
         logout() {
             this.$store.dispatch('logout')
                 .then(r => {
@@ -124,5 +131,39 @@ input[type=text], input[type=password] {
         height: 1.5em;
         float: left;
     }
+}
+.loading {
+    display: flex;
+    justify-content: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    flex-direction: column
+
+}
+.loading img {
+    animation: pulse 400ms ease infinite 0s;
+    display: block;
+    margin: 0 auto;
+    max-height: 30vh;
+}
+.loading p {
+    text-align: center;
+    font-weight: bold;
+    font-size: larger;
+}
+@keyframes pulse {
+	to {
+		transform: scale(1.2);
+	}
+}
+.fade-enter-active {
+    transition: opacity 1s;
+    opacity: 1;
+}
+.fade-leave-active {
+    transition: opacity 0.4s;
+    opacity: 0;
 }
 </style>
