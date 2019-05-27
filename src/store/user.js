@@ -11,7 +11,7 @@ export default {
         isLogin(state) {
             return Number.isInteger(state.id)
         },
-        getUser(state) {
+        getCurrentUser(state) {
             return state
         }
     },

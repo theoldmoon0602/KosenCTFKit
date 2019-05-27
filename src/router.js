@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import Router from 'vue-router/dist/vue-router.js'
 
-import index from './pages/index.vue'
+import index from '../index.vue'
 import login from './pages/login.vue'
 import register from './pages/register.vue'
 import challenges from './pages/challenges.vue'

@@ -1,6 +1,6 @@
 export default {
     state: {
-        name: '',
+        name: undefined,
         ctf_open: false,
         ctf_frozen: false,
         register_open: false,

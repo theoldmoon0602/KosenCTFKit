@@ -32,6 +32,7 @@ export default new Vuex.Store({
                     return r
                 })
                 .catch(e => {
+                    console.log(e);
                     context.commit('addError', 'Missing server connection')
                     return false
                 })

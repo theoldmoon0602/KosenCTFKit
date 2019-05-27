@@ -1,13 +1,14 @@
 <template lang="pug">
     .rows.col-12.col-lg-8.offset-lg-2
-        h3.h3 Team Registration
+
+        h3.h3 1. Team Registration
         form(@submit.prevent="registerTeam")
             .form-group
                 label.d-block(for="teamname") teamname
                 input#teamname(type="text" v-model="teamname" required placeholder="teamname" class="form-control")
             button.btn.btn-primary(type="submit") Register Team
 
-        h3.h3 User Registration
+        h3.h3 2. User Registration
         form(@submit.prevent="registerUser")
             .form-group
                 label.d-block(for="teamtoken") teamtoken

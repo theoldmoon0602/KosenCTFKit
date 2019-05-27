@@ -1,7 +1,6 @@
 <template lang="pug">
     .col-12.col-lg-8.offset-lg-2
         h3.h3
-
             |{{ user.name }}
             template(v-if="user.team")
                 |@
@@ -28,14 +27,12 @@
                 label.custom-file-label(for="icon") Upload Icon
 
 
-
         h4.h4 Solved Challenges
             .row
                 .card.col-12.col-md-6(v-for="cid in user.solved" v-if="challenge(cid)")
                     .card-body
                         .card-title {{ challenge(cid).name }}
                         .card-text {{ challenge(cid).category }} [{{challenge(cid).score}}points]
-
 
 </template>
 
@@ -65,21 +62,21 @@ export default Vue.extend({
             let fileReader = new FileReader();
             fileReader.addEventListener("load", () => {
                 let icon = fileReader.result;
-                this.$store.dispatch('uploadIcon', icon.split(',')[1]);
+                this.$store.dispatch('uploadIcon', icon.split(',')[1])
             }, false)
             fileReader.readAsDataURL(f);
         },
     },
     computed: {
         user() {
-            let users = this.$store.getters.getUsers;
             let user_id = this.$route.params['user_id']
-            return users[user_id];
+            let user = this.$store.getters.getUsers[user_id]
+            return user;
         },
         loginUser() {
-            return this.$store.getters.getUser;
+            return this.$store.getters.getCurrentUser;
         }
-    }
+    },
 })
 </script>
 
