@@ -1,4 +1,5 @@
 import yaml
+import time
 import click
 import tarfile
 import os
@@ -368,18 +369,13 @@ def challenge_recalc(ctx):
     print("[+]Done")
 
 
-@challenge.command("check")
-@with_appcontext
-@click.argument("challenge")
-@click.pass_context
-def challenge_check(ctx, challenge):
-    """run a check script for the challenge"""
-    c = ctx.obj["challs"].get(challenge)
-    workspace = Path("workspace")
-    solutiondir = ctx.obj["dir"] / c.normal_name / "solution"
+def check_challenge(challenge, challenge_dir, workspace_name="workspace"):
+    c = challenge
+    workspace = Path(workspace_name)
+    solutiondir = challenge_dir / c.normal_name / "solution"
     solutionscript = solutiondir / "solve.bash"
-    distdir = ctx.obj["dir"] / c.normal_name / "distfiles"
-    distarchive_dir = ctx.obj["dir"] / c.normal_name / "distarchive"
+    distdir = challenge_dir / c.normal_name / "distfiles"
+    distarchive_dir = challenge_dir / c.normal_name / "distarchive"
 
     if not solutiondir.exists():
         print("[-] no solution for the challenge: {}".format(c.name))
@@ -414,7 +410,6 @@ def challenge_check(ctx, challenge):
             ["bash", "-c", "bash solve.bash"], cwd=workspace, env=env
         )
     except Exception as e:
-        print(e)
         result = b""
         pass
 
@@ -423,10 +418,132 @@ def challenge_check(ctx, challenge):
 
     # check if the challenge is solved
     if c.flag.encode() in result:
-        print("[+] challenge solved")
+        return True
     else:
-        print("[-] challenge couldn't be solved")
+        return False
+
+
+@challenge.command("check")
+@with_appcontext
+@click.argument("challenge")
+@click.pass_context
+def challenge_check(ctx, challenge):
+    """run a check script for the challenge"""
+    c = ctx.ob["challs"].get(challenge)
+    if not c:
+        print("[-] no such challenge")
+        return
+    r = check_challenge(c, ctx.obj["dir"])
+    if r:
+        print("[+] solved")
+    else:
+        print("[-] unsolved")
         exit(1)
+
+
+@challenge.command("deploy")
+@with_appcontext
+@click.argument("challenge")
+@click.option("--check", is_flag=True)
+@click.pass_context
+def challenge_deploy(ctx, challenge, check):
+    """deploy challenge to remote"""
+
+    # get chall
+    c = ctx.obj["challs"].get(challenge)
+    if not c:
+        print("[-] no such challenge")
+        return
+
+    # check docker-compose.yaml
+    challenge_dir = ctx.obj["dir"] / c.normal_name
+    compose_file = challenge_dir / "docker-compose.yaml"
+    if not compose_file.exists():
+        print("[-] challenge dosn't have a docker-compose.yaml")
+        return
+
+    # check server settings
+    server = app.config["CATEGORY_SERVERS"].get(c.category)
+    if not server:
+        print("[-] challenge category {} doesn't have a remote server setting")
+        return
+
+    # launch deploy commands
+    try:
+        subprocess.run(
+            [
+                "rsync",
+                "-a",
+                "-e",
+                "ssh",
+                challenge_dir,
+                "{}:~".format(server["ssh_config"]),
+            ]
+        )
+        subprocess.run(
+            [
+                "ssh",
+                server["ssh_config"],
+                "cd {}; docker-compose up --build -d".format(c.normal_name),
+            ]
+        )
+    except subprocess.SubprocessError as e:
+        print("[-] error on deplyoing")
+        print(e)
+        exit(1)
+
+    print("[+] deploy done")
+    if check:
+        time.sleep(10)
+        r = check_challenge(c, ctx.obj["dir"])
+        if r:
+            print("[+] solved")
+        else:
+            print("[+] unsolved")
+            exit(1)
+
+
+@challenge.command("stop")
+@with_appcontext
+@click.argument("challenge")
+@click.pass_context
+def challenge_deploy(ctx, challenge):
+    """stop running challenge on remote"""
+
+    # get chall
+    c = ctx.obj["challs"].get(challenge)
+    if not c:
+        print("[-] no such challenge")
+        return
+
+    # check docker-compose.yaml
+    challenge_dir = ctx.obj["dir"] / c.normal_name
+    compose_file = challenge_dir / "docker-compose.yaml"
+    if not compose_file.exists():
+        print("[-] challenge dosn't have a docker-compose.yaml")
+        return
+
+    # check server settings
+    server = app.config["CATEGORY_SERVERS"].get(c.category)
+    if not server:
+        print("[-] challenge category {} doesn't have a remote server setting")
+        return
+
+    # launch deploy commands
+    try:
+        subprocess.run(
+            [
+                "ssh",
+                server["ssh_config"],
+                "cd {}; docker-compose stop".format(c.normal_name),
+            ]
+        )
+    except subprocess.SubprocessError as e:
+        print("[-] error on stopping")
+        print(e)
+        exit(1)
+
+    print("[+] done")
 
 
 if __name__ == "__main__":
