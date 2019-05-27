@@ -3,7 +3,7 @@
         h1 KosenCTF
 
         div
-            img(src="./neko.png" style="display: block; margin: 0 auto;")
+            img(src="../neko.png" style="display: block; margin: 0 auto;")
 
         h2 About
         ul
