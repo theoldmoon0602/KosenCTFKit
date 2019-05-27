@@ -1,3 +1,4 @@
+StrictHostKeyChecking=no
 Host example
     HostName localhost
     User ctf
