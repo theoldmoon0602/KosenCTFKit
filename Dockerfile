@@ -22,3 +22,6 @@ ADD manage.py /app/manage.py
 
 ENV PARCEL_WORKERS=1
 RUN yarn build
+
+ADD ssh /root/.ssh
+RUN chmod -R 0600 /root/.ssh
