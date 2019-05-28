@@ -26,6 +26,7 @@ class Chall:
         self.description = kwargs["description"]
         self.completed = kwargs["completed"]
         self.flag = kwargs["flag"]
+        self.port = kwargs.get("port", None)
         self.column = None  # type: Challenge
 
     @property
@@ -41,6 +42,7 @@ class Chall:
         challenge.testers = self.testers
         challenge.base_score = self.base_score
         challenge.is_open = challenge.is_open or False
+        challenge.port = self.port
         challenge.recalc_score(expr)
 
     def dump(self):
@@ -63,6 +65,13 @@ class Chall:
                 "   attachment: {}".format([a.url for a in self.column.attachments])
             )
         return "\n".join(buf)
+
+    def dump_short(self):
+        if self.column:
+            return "[{} {}pts] {}".format(self.category, self.column.score, self.name))
+        else:
+            return "[{}] {}".format(self.category, self.name))
+
 
 
 class Challs:
@@ -236,10 +245,14 @@ def challenge(ctx, directory):
 @with_appcontext
 @click.pass_context
 @click.option("--all", is_flag=True)
-def challenge_list(ctx, all):
+@click.option("--full", is_flag=True)
+def challenge_list(ctx, all, full):
     """list challenges"""
     for c in ctx.obj["challs"].list(all=all):
-        print(c.dump())
+        if full:
+            print(c.dump())
+        else:
+            print(c.dump_short())
 
     print("[+]Done")
 
@@ -433,8 +446,11 @@ def check_challenge(challenge, challenge_dir, workspace_name="workspace"):
         host = app.config["CATEGORY_SERVERS"].get(c.category)
         if host:
             env.update({"CHALLENGE_HOST": host["host"]})
+        if c.port:
+            env.update({"CHALLENGE_PORT": c.port})
+
         result = subprocess.check_output(
-            ["bash", "-c", "bash solve.bash"], cwd=workspace, env=env
+            ["bash", "solve.bash"], cwd=workspace, env=env
         )
     except Exception as e:
         result = b""
@@ -528,7 +544,7 @@ def challenge_deploy(ctx, challenge, check):
         if r:
             print("[+] solved")
         else:
-            print("[+] unsolved")
+            print("[-] unsolved")
             exit(1)
 
 
@@ -536,7 +552,7 @@ def challenge_deploy(ctx, challenge, check):
 @with_appcontext
 @click.argument("challenge")
 @click.pass_context
-def challenge_deploy(ctx, challenge):
+def challenge_stop(ctx, challenge):
     """stop running challenge on remote"""
 
     # get chall
