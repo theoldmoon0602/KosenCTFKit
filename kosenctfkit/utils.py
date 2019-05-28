@@ -88,7 +88,7 @@ def get_challenges():
                 current_app.config["CATEGORY_SERVERS"].get(c.category, {"host": ""})[
                     "host"
                 ],
-            ).replace("{{port}}", c.port or ""),
+            ).replace("{{port}}", str(c.port or "")),
             "attachments": [as_url(current_app, a.url) for a in c.attachments.all()],
         }
     return ret
