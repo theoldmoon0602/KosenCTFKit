@@ -529,7 +529,7 @@ def challenge_deploy(ctx, challenge, check):
             [
                 "ssh",
                 server["ssh_config"],
-                "cd {}; docker-compose up --build -d".format(c.normal_name),
+                "cd {}; env CHALLENGE_PORT=""{} docker-compose up --build -d".format(c.port, c.normal_name),
             ]
         )
     except subprocess.SubprocessError as e:
