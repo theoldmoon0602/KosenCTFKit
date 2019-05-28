@@ -68,9 +68,9 @@ class Chall:
 
     def dump_short(self):
         if self.column:
-            return "[{} {}pts] {}".format(self.category, self.column.score, self.name))
+            return "[{} {}pts] {}".format(self.category, self.column.score, self.name)
         else:
-            return "[{}] {}".format(self.category, self.name))
+            return "[{}] {}".format(self.category, self.name)
 
 
 
@@ -529,7 +529,7 @@ def challenge_deploy(ctx, challenge, check):
             [
                 "ssh",
                 server["ssh_config"],
-                "cd {}; env PORT={} docker-compose up --build -d".format(c.port, c.normal_name),
+                "cd {}; env PORT={} docker-compose up --build -d".format(c.normal_name, c.port),
             ]
         )
     except subprocess.SubprocessError as e:
