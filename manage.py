@@ -581,7 +581,7 @@ def challenge_stop(ctx, challenge):
             [
                 "ssh",
                 server["ssh_config"],
-                "cd {}; docker-compose stop".format(c.normal_name),
+                "cd {}; env PORT={} docker-compose stop".format(c.normal_name, c.port),
             ]
         )
     except subprocess.SubprocessError as e:
