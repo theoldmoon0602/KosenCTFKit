@@ -5,7 +5,7 @@
             .card(v-for="chal in c" v-bind:class="{'border-success' : is_solved(chal.id)}")
                 h5.card-header(v-bind:class="{'bg-success': is_solved(chal.id)}")
                     a.trigger(data-toggle="collapse"  aria-expanded="true" :data-target="'#chal-' + chal.id" :aria-controls="'chal-'+chal.id")
-                        |{{ chal.name }}
+                        |{{chal.difficulty}}: {{ chal.name }}
                         small.small [{{ chal.score }}] - {{ chal.solved }} solved
                 .collapse(:id="'chal-'+chal.id")
                     .card-body.col-12.col-md-8.mx-auto
