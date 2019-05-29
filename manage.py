@@ -73,7 +73,6 @@ class Chall:
             return "[{}] {}".format(self.category, self.name)
 
 
-
 class Challs:
     def __init__(self, cs, dirpath):
         self.dirpath = dirpath
@@ -447,11 +446,9 @@ def check_challenge(challenge, challenge_dir, workspace_name="workspace"):
         if host:
             env.update({"CHALLENGE_HOST": host["host"]})
         if c.port:
-            env.update({"CHALLENGE_PORT": c.port})
+            env.update({"CHALLENGE_PORT": str(c.port)})
 
-        result = subprocess.check_output(
-            ["bash", "solve.bash"], cwd=workspace, env=env
-        )
+        result = subprocess.check_output(["bash", "solve.bash"], cwd=workspace, env=env)
     except Exception as e:
         result = b""
         pass
@@ -529,7 +526,9 @@ def challenge_deploy(ctx, challenge, check):
             [
                 "ssh",
                 server["ssh_config"],
-                "cd {}; env PORT={} docker-compose up --build -d".format(c.normal_name, c.port),
+                "cd {}; env PORT={} docker-compose up --build -d".format(
+                    c.normal_name, c.port
+                ),
             ]
         )
     except subprocess.SubprocessError as e:
