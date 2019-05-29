@@ -90,6 +90,7 @@ def get_challenges():
                 ],
             ).replace("{{port}}", str(c.port or "")),
             "attachments": [as_url(current_app, a.url) for a in c.attachments.all()],
+            "difficulty": c.difficulty,
         }
     return ret
 

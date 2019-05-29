@@ -132,6 +132,7 @@ class Challenge(db.Model):
     score = db.Column(db.Integer, nullable=False)
     is_open = db.Column(db.Boolean, nullable=False, default=False)
     port = db.Column(db.Integer)
+    difficulty = db.Column(db.Text)
     attachments = db.relationship("Attachment", backref="challenge", lazy="dynamic")
     submissions = db.relationship("Submission", backref="challenge", lazy="dynamic")
 

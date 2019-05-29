@@ -27,6 +27,7 @@ class Chall:
         self.completed = kwargs["completed"]
         self.flag = kwargs["flag"]
         self.port = kwargs.get("port", None)
+        self.difficulty = kwargs.get("difficulty", None)
         self.column = None  # type: Challenge
 
     @property
@@ -43,6 +44,7 @@ class Chall:
         challenge.base_score = self.base_score
         challenge.is_open = challenge.is_open or False
         challenge.port = self.port
+        challenge.difficulty = self.difficulty
         challenge.recalc_score(expr)
 
     def dump(self):
