@@ -11,6 +11,19 @@ import ctf from './ctf.js'
 Vue.use(Vuex)
 
 export default new Vuex.Store({
+    state: {
+        is_connected: true,
+    },
+    getters: {
+        isConnected(state) {
+            return state.is_connected;
+        },
+    },
+    mutations: {
+        setConnectionStatus(state, connection_status) {
+            state.is_connected = connection_status;
+        }
+    },
     actions: {
         update(context) {
             return axios.get('/update')
@@ -29,11 +42,12 @@ export default new Vuex.Store({
                         ctf_frozen: r.data['ctf_frozen'],
                         register_open: r.data['register_open'],
                     })
+                    context.commit('setConnectionStatus', true);
                     return r
                 })
                 .catch(e => {
                     console.log(e);
-                    context.commit('addError', 'Missing server connection')
+                    context.commit('setConnectionStatus', false);
                     return false
                 })
         },

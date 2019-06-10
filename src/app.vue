@@ -36,14 +36,13 @@
                                 li.nav-item(v-if="registerOpen")
                                     router-link.nav-link(to="/register") Register
 
+                .alert.alert-danger(v-if="!isConnected") SERVER CONNECTION MISSING
                 .alert.alert-danger(v-if="!isOpen") CTF IS CLOSED
                 .alert.alert-danger(v-if="isFrozen") SCOREBOARD IS FROZEN
-                .alert.alert-dismissible.alert-info.fade.show(v-for="m in messages") {{ m }}
-                    button.close(type="button" data-dismiss="alert" aria-label="close")
-                        span(aria-hidden="true") &times;
-                .alert.alert-dismissible.alert-danger(v-for="e in errors") {{ e }}
-                    button.close(type="button" data-dismiss="alert" aria-label="close")
-                        span(aria-hidden="true") &times;
+                transition(name="msg")
+                    div.message(v-if="message.content")
+                        p(v-bind:class="{error : message.is_error}") {{message.content}}
+                        img(src="mouse.png")
                 router-view
 </template>
 
@@ -72,11 +71,8 @@ export default Vue.extend({
         }
     },
     computed: {
-        messages() {
-            return this.$store.getters.getMessages;
-        },
-        errors() {
-            return this.$store.getters.getErrors;
+        message() {
+            return this.$store.getters.getMessage;
         },
         login() {
             return this.$store.getters.isLogin;
@@ -95,6 +91,9 @@ export default Vue.extend({
         },
         registerOpen() {
             return this.$store.getters.registerOpen;
+        },
+        isConnected() {
+            return this.$store.getters.isConnected;
         }
     },
 })
@@ -140,7 +139,6 @@ input[type=text], input[type=password] {
     left: 50%;
     transform: translate(-50%, -50%);
     flex-direction: column
-
 }
 .loading img {
     animation: pulse 400ms ease infinite 0s;
@@ -154,9 +152,9 @@ input[type=text], input[type=password] {
     font-size: larger;
 }
 @keyframes pulse {
-	to {
-		transform: scale(1.2);
-	}
+    to {
+        transform: scale(1.2);
+    }
 }
 .fade-enter-active {
     transition: opacity 1s;
@@ -165,5 +163,35 @@ input[type=text], input[type=password] {
 .fade-leave-active {
     transition: opacity 0.4s;
     opacity: 0;
+}
+.msg-enter-active, .msg-leave-active {
+  transform: translate(0px, 0px);
+  transition: transform 225ms cubic-bezier(0, 0, 0.2, 1) 0ms;
+}
+
+.msg-enter, .msg-leave-to {
+  transform: translateX(100vh);
+}
+.message {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    z-index: 99999;
+}
+.message p {
+    position: relative;
+    max-width: 200px;
+    background: #fff;
+    border: 5px solid #bbb;
+    padding: 10px;
+    top: 20px;
+}
+.message p.error {
+    border-color: #f99;
+}
+.message img {
+    max-width: 100px;
+    display: block;
+    margin-left: auto;
 }
 </style>

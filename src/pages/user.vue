@@ -56,7 +56,7 @@ export default Vue.extend({
             let f = files[0];
 
             if (! f.type.match('image/*')) {
-                this.$store.dispatch('addError', 'Not an Image file')
+                this.$store.dispatch('setError', 'Not an Image file')
                 return
             }
             let fileReader = new FileReader();
