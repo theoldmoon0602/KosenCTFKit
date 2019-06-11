@@ -36,12 +36,12 @@ export default {
                 withCredentials: true
             })
                 .then(r => {
-                    context.dispatch('addMessage', r.data['message'])
+                    context.dispatch('setMessage', r.data['message'])
                     context.dispatch('update')
                     return r
                 })
                 .catch(e => {
-                    context.dispatch('addError', e.response.data['message'])
+                    context.dispatch('setError', e.response.data['message'])
                     return false
                 })
         }

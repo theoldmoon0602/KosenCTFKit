@@ -21,7 +21,7 @@ export default {
             return axios.post('/regenerate', {}, {
                 withCredentials: true
             }).then(r => {
-                context.dispatch('addMessage', 'Teamtoken is regenerated')
+                context.dispatch('setMessage', 'Teamtoken is regenerated')
                 context.dispatch('update')
             })
         }

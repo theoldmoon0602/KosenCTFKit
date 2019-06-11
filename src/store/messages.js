@@ -1,46 +1,39 @@
 export default {
     state: {
-        messages: [],
-        errors: []
+        message: '',
+        is_error: false
     },
     getters: {
-        getMessages(state) {
-            return state.messages
-        },
-        getErrors(state) {
-            return state.errors
+        getMessage(state) {
+            return {
+                content: state.message,
+                is_error: state.is_error
+            }
         },
     },
     mutations: {
-        addMessage(state, message) {
-            if (!state.messages.includes(message)) {
-                state.messages.push(message)
-            }
+        setMessage(state, m) {
+            state.message = m.message;
+            state.is_error = m.is_error;
         },
         deleteMessage(state, message) {
-            state.messages = state.messages.filter(m => m != message)
-        },
-        addError(state, error) {
-            if (!state.errors.includes(error)) {
-                state.errors.push(error)
+            if (state.message == message) {
+                state.message = '';
             }
-        },
-        deleteError(state, error) {
-            state.errors = state.errors.filter(e => e != error)
-        },
+        }
     },
     actions: {
-        addMessage(context, message) {
-            context.commit('addMessage', message);
+        setMessage(context, message) {
+            context.commit('setMessage', {message: message, is_error: false});
             setTimeout(() => {
                 context.commit('deleteMessage', message)
             }, 10000);
         },
-        addError(context, error) {
-            context.commit('addError', error);
+        setError(context, message) {
+            context.commit('setMessage', {message: message, is_error: true});
             setTimeout(() => {
-                context.commit('deleteError', error)
+                context.commit('deleteMessage', message)
             }, 10000);
-        },
+        }
     },
 }
