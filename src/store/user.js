@@ -28,7 +28,7 @@ export default {
         login(context, userinfo) {
             return axios.post('/login', userinfo)
                 .then(r => {
-                    context.dispatch('setMessage', 'Login Succeeded')
+                    context.dispatch('setMessage', 'Successfully logged in')
                     context.dispatch('update')
                     return r
                 })
@@ -40,7 +40,7 @@ export default {
         register(context, userinfo) {
             return axios.post('/register', userinfo)
                 .then(r => {
-                    context.dispatch('setMessage', 'The user "'+ r.data['name'] + '" has just registered.')
+                    context.dispatch('setMessage', 'The user "'+ r.data['name'] + '" is successfully registered.')
                     return r
                 })
                 .catch(e => {
