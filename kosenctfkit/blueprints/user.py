@@ -12,26 +12,26 @@ user = Blueprint("user_", __name__)
 def register():
     token = request.json.get("token", "").strip()
     if not token:
-        return error("token is required")
+        return error("Token is required")
 
     username = request.json.get("username", "").strip()
     if not username:
-        return error("username is required")
+        return error("Username is required")
 
     password = request.json.get("password", "").strip()
     if not password:
-        return error("password is required")
+        return error("Password is required")
 
     team = Team.query.filter(Team.token == token).first()
     if not team:
-        return error("the token is invalid")
+        return error("The token is invalid")
 
     if not Config.get().register_open:
         return error("Registration is closed")
 
     user = User.query.filter(User.name == username).first()
     if user:
-        return error("user `{}` already exists".format(username))
+        return error("The user `{}` already exists".format(username))
 
     # TODO: check number of members
 
@@ -47,7 +47,7 @@ def register():
     db.session.commit()
 
     logger.log(
-        ":heavy_plus_sign: `{}@{}` has just registered".format(
+        ":heavy_plus_sign: `{}@{}` is registered".format(
             user.name, user.team.name
         )
     )
@@ -58,18 +58,18 @@ def register():
 def login():
     username = request.json.get("username", "").strip()
     if not username:
-        return error("username is required")
+        return error("Username is required")
 
     password = request.json.get("password", "").strip()
     if not password:
-        return error("password is required")
+        return error("Password is required")
 
     user = User.query.filter(User.name == username).first()
     if not user:
-        return error("user `{}` doesn't exist".format(username))
+        return error("User `{}` doesn't exist".format(username))
 
     if not user.check_password(password):
-        return error("invalid password")
+        return error("Invalid password")
 
     session["user_id"] = user.id
     return "", 204
@@ -80,14 +80,14 @@ def login():
 def password_update(user):
     cur = request.json.get("current_password", "").strip()
     if not cur:
-        return error("current_password required")
+        return error("Current password required")
 
     new = request.json.get("new_password", "").strip()
     if not new:
-        return error("new_password required")
+        return error("New password required")
 
     if not user.check_password(cur):
-        return error("invalid current_password")
+        return error("Current password is invalid")
 
     user.password = new
     db.session.add(user)
@@ -101,10 +101,10 @@ def password_update(user):
 def upload_icon(user):
     icon = request.json.get("icon", "").strip()
     if not icon:
-        return error("icon required")
+        return error("Icon required")
     path = uploader.upload_icon(icon)
     if not path:
-        return error("failed to upload")
+        return error("Failed to upload the icon")
 
     user.icon = path
     db.session.add(user)

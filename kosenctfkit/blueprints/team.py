@@ -10,14 +10,14 @@ team = Blueprint("team_", __name__)
 def register():
     teamname = request.json.get("teamname", None)
     if not teamname:
-        return error("teamname is required")
+        return error("Team name is required")
 
     if not Config.get().register_open:
         return error("Registration is closed")
 
     team = Team.query.filter(Team.name == teamname).first()
     if team and team.valid:
-        return error("the team `{}` already exists".format(teamname))
+        return error("The team `{}` already exists".format(teamname))
 
     if not team:
         team = Team()
