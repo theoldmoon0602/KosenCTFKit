@@ -11,8 +11,8 @@ class User(db.Model):
     __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.Text, unique=True, nullable=False)
-    password_hash = db.Column(db.Text, nullable=False)
+    name = db.Column(db.String(512), unique=True, nullable=False)
+    password_hash = db.Column(db.String(512), nullable=False)
     team_id = db.Column(db.Integer, db.ForeignKey("teams.id"))
     icon = db.Column(db.Text)
     is_admin = db.Column(db.Boolean, default=False, nullable=False)
@@ -27,7 +27,7 @@ class User(db.Model):
         self.password_hash = bcrypt.hashpw(pw.encode("utf-8"), bcrypt.gensalt())
 
     def check_password(self, pw):
-        return bcrypt.checkpw(pw.encode("utf-8"), self.password_hash)
+        return bcrypt.checkpw(pw.encode("utf-8"), self.password_hash.encode("utf-8"))
 
     def getSolves(self, valid_only):
         solves = (
@@ -70,7 +70,7 @@ class Team(db.Model):
     __tablename__ = "teams"
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.Text, unique=True, nullable=False)
+    name = db.Column(db.String(512), unique=True, nullable=False)
     token = db.Column(db.String(256), unique=True, nullable=False)
     members = db.relationship("User", backref="team", lazy="dynamic")
     valid = db.Column(db.Boolean, nullable=False, default=False)
@@ -122,17 +122,17 @@ class Challenge(db.Model):
     __tablename__ = "challenges"
 
     id = db.Column(db.Integer, primary_key=True)
-    category = db.Column(db.Text, nullable=False)
-    name = db.Column(db.Text, unique=True, nullable=False)
-    flag = db.Column(db.Text, nullable=False)
+    category = db.Column(db.String(512), nullable=False)
+    name = db.Column(db.String(512), unique=True, nullable=False)
+    flag = db.Column(db.String(512), nullable=False)
     description = db.Column(db.Text, nullable=False)
-    author = db.Column(db.Text, nullable=False)
+    author = db.Column(db.String(512), nullable=False)
     tester_array = db.Column(db.Text, nullable=False)
     base_score = db.Column(db.Integer, nullable=False)
     score = db.Column(db.Integer, nullable=False)
     is_open = db.Column(db.Boolean, nullable=False, default=False)
     port = db.Column(db.Integer)
-    difficulty = db.Column(db.Text)
+    difficulty = db.Column(db.String(512))
     attachments = db.relationship("Attachment", backref="challenge", lazy="dynamic")
     submissions = db.relationship("Submission", backref="challenge", lazy="dynamic")
 
@@ -162,7 +162,7 @@ class Attachment(db.Model):
     __tablename__ = "attachments"
 
     id = db.Column(db.Integer, primary_key=True)
-    url = db.Column(db.String, nullable=False)
+    url = db.Column(db.Text, nullable=False)
     challenge_id = db.Column(db.Integer, db.ForeignKey("challenges.id"), nullable=False)
 
 
@@ -171,7 +171,7 @@ class Submission(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     challenge_id = db.Column(db.Integer, db.ForeignKey("challenges.id"), nullable=False)
-    flag = db.Column(db.Text, nullable=False)
+    flag = db.Column(db.String(512), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     team_id = db.Column(db.Integer, db.ForeignKey("teams.id"))
     created_at = db.Column(
@@ -184,7 +184,7 @@ class Submission(db.Model):
 class Config(db.Model):
     __tablename__ = "config"
 
-    name = db.Column(db.String, nullable=False, primary_key=True)
+    name = db.Column(db.String(512), nullable=False, primary_key=True)
     start_at = db.Column(db.Integer, nullable=False)
     end_at = db.Column(db.Integer, nullable=False)
     is_open = db.Column(db.Boolean, nullable=False)

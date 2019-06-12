@@ -1,6 +1,6 @@
 FROM alpine:latest
 
-RUN apk add --no-cache nodejs npm python3 python3-dev alpine-sdk libffi-dev openssl-dev  build-base jpeg-dev zlib-dev openssh-client rsync
+RUN apk add --no-cache nodejs npm python3 python3-dev alpine-sdk libffi-dev openssl-dev  build-base jpeg-dev zlib-dev openssh-client rsync mariadb-dev
 RUN npm install -g yarn
 RUN pip3 install pipenv gunicorn
 RUN mkdir /app
