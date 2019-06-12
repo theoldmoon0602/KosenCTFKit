@@ -16,6 +16,7 @@ requests = "*"
 pytz = "*"
 pyyaml = "*"
 flask-admin = "*"
+mysqlclient = "*"
 
 [requires]
 python_version = "3.7"
