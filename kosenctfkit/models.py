@@ -2,6 +2,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm.exc import DetachedInstanceError
 from sqlalchemy import desc
 from datetime import datetime
+from binascii import hexlify, unhexlify
 import bcrypt
 
 db = SQLAlchemy()
@@ -24,10 +25,10 @@ class User(db.Model):
 
     @password.setter
     def password(self, pw):
-        self.password_hash = bcrypt.hashpw(pw.encode("utf-8"), bcrypt.gensalt())
+        self.password_hash = hexlify(bcrypt.hashpw(pw.encode("utf-8"), bcrypt.gensalt())).decode("utf-8")
 
     def check_password(self, pw):
-        return bcrypt.checkpw(pw.encode("utf-8"), self.password_hash.encode("utf-8"))
+        return bcrypt.checkpw(pw.encode("utf-8"), unhexlify(self.password_hash))
 
     def getSolves(self, valid_only):
         solves = (

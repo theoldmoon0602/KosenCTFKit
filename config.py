@@ -2,7 +2,7 @@ class DefaultConfig:
     SECRET_KEY = "weak_key"
     DEBUG = True
     JSON_AS_ASCII = False
-    SQLALCHEMY_DATABASE_URI = "mysql+mysqldb://kosenctfkit:kosenctfkit@kosenctfkit_db/kosenctfkit?charset=utf8mb4"
+    SQLALCHEMY_DATABASE_URI = "postgresql://kosenctfkit:kosenctfkit@kosenctfkit_db/kosenctfkit"
     SQLALCHEMY_TRACK_MODIFICATIONS = True
     WEBHOOK_URL = (
         "https://hooks.slack.com/services/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"
