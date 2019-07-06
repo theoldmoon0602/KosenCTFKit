@@ -1,100 +1,24 @@
-import yaml
-import time
 import click
+import yaml
 import tarfile
 import os
 import shutil
 import subprocess
+import pytz
 from pathlib import Path
 from flask import Flask
-from kosenctfkit.models import db, Config, User, Challenge, Attachment
-from kosenctfkit.uploader import uploader
 from kosenctfkit.app import init_app
-from config import DefaultConfig
+from kosenctfkit.models import User, Config, Challenge, Attachment, db
+from config import config
 
 app = Flask(__name__)
-init_app(app, DefaultConfig)
+init_app(app, config)
+challenges_dir = None
+challenges = None
 
 
-class Chall:
-    def __init__(self, name, **kwargs):
-        self.name = name
-        self.category = kwargs["category"]
-        self.base_score = kwargs["base_score"]
-        self.author = kwargs["author"]
-        self.testers = kwargs["testers"]
-        self.description = kwargs["description"]
-        self.completed = kwargs["completed"]
-        self.flag = kwargs["flag"]
-        self.port = kwargs.get("port", None)
-        self.difficulty = kwargs.get("difficulty", None)
-        self.column = None  # type: Challenge
-
-    @property
-    def normal_name(self) -> str:
-        return self.name.replace(" ", "_").lower()
-
-    def setChallenge(self, challenge: Challenge, expr):
-        challenge.name = self.name
-        challenge.category = self.category
-        challenge.flag = self.flag
-        challenge.description = self.description
-        challenge.author = self.author
-        challenge.testers = self.testers
-        challenge.base_score = self.base_score
-        challenge.is_open = challenge.is_open or False
-        challenge.port = self.port
-        challenge.difficulty = self.difficulty
-        challenge.recalc_score(expr)
-
-    def dump(self):
-        buf = []
-
-        buf.append("== {} ==".format(self.name))
-        buf.append(" category  : {}".format(self.category))
-        buf.append(" author    : {}".format(self.author))
-        buf.append(" flag      : {}".format(self.flag))
-        buf.append(" base_score: {}".format(self.base_score))
-        buf.append(" testers   : {}".format(self.testers))
-        buf.append(" completed : {}".format(self.completed))
-        buf.append(" registered: {}".format(bool(self.column)))
-
-        if self.column:
-            buf.append("   open      : {}".format(self.column.is_open))
-            buf.append("   solves    : {}".format(self.column.solve_num))
-            buf.append("   score     : {}".format(self.column.score))
-            buf.append(
-                "   attachment: {}".format([a.url for a in self.column.attachments])
-            )
-        return "\n".join(buf)
-
-    def dump_short(self):
-        if self.column:
-            return "[{} {}pts] {}".format(self.category, self.column.score, self.name)
-        else:
-            return "[{}] {}".format(self.category, self.name)
-
-
-class Challs:
-    def __init__(self, cs, dirpath):
-        self.dirpath = dirpath
-        self.names = cs.keys()
-        self.cs = {}
-        for name, values in cs.items():
-            self.cs[name] = Chall(name, **values)
-
-    def list(self, all=False):
-        for name in self.names:
-            c = self.cs[name]
-            if not all and not c.completed:
-                continue
-            c.column = Challenge.query.filter(Challenge.name == c.name).first()
-            yield c
-
-    def get(self, name):
-        c = self.cs[name]
-        c.column = Challenge.query.filter(Challenge.name == c.name).first()
-        return c
+def normal_name(challenge_name):
+    return challenge_name.replace(" ", "_").lower()
 
 
 def with_appcontext(f):
@@ -111,8 +35,8 @@ def with_appcontext(f):
 def printConfig(config):
     from datetime import datetime
 
-    start_at = datetime.fromtimestamp(config.start_at)
-    end_at = datetime.fromtimestamp(config.end_at)
+    start_at = datetime.utcfromtimestamp(config.start_at)
+    end_at = datetime.utcfromtimestamp(config.end_at)
 
     status = "closed"
     if config.register_open:
@@ -136,40 +60,34 @@ def cli():
 
 @cli.command()
 @with_appcontext
-@click.argument("yaml_file", type=click.File("r"))
-def init(yaml_file):
+def init():
     """initialize CTF by yaml file"""
-    ctf = yaml.safe_load(yaml_file)["ctf"]
-
-    # check
-    _ = int(eval(ctf["score_expr"], {"N": 0, "V": 1000}))
-
     # initialize db
     db.create_all()
     db.session.commit()
 
-    # assign
-    config = Config.get() or Config()  # type: Config
-    config.name = ctf["name"]
-    config.start_at = ctf["start_at"].timestamp()
-    config.end_at = ctf["end_at"].timestamp()
-    config.score_expr = ctf["score_expr"]
-    config.is_open = config.is_open or False
-    config.register_open = config.register_open or False
+    ctf = Config.get() or Config()  # type: Config
+    ctf.name = app.config["CTF_NAME"]
+    ctf.start_at = int(app.config["START_AT"].astimezone(pytz.UTC).timestamp())
+    ctf.end_at = int(app.config["END_AT"].astimezone(pytz.UTC).timestamp())
+    ctf.score_expr = app.config["SCORE_EXPR"]
+    ctf.is_open = ctf.is_open or False
+    ctf.register_open = ctf.register_open or False
 
     admin = User.query.filter(User.is_admin == True).first() or User()  # type: User
-    admin.name = ctf["admin"]["name"]
-    admin.password = ctf["admin"]["password"]
+    admin.name = app.config["ADMIN_NAME"]
+    admin.email = "admin@example.com"
+    admin.verified = True
+    admin.password = app.config["ADMIN_PASSWORD"]
     admin.is_admin = True
 
     # commit
-    db.session.add(config)
+    db.session.add(ctf)
     db.session.add(admin)
     db.session.commit()
 
     # print
-    printConfig(config)
-    print("[+]Done")
+    printConfig(ctf)
 
 
 @cli.command()
@@ -182,32 +100,14 @@ def reset():
 
 @cli.command()
 @with_appcontext
-@click.option("--only-register", is_flag=True)
-def open(only_register):
+@click.option("--register", is_flag=True, help="open/close only registration")
+@click.option("--close", is_flag=True, help="close instead of opening")
+def open(register, close):
     """open CTF and/or registration"""
     config = Config.get()
-    config.register_open = True
-    if not only_register:
-        config.is_open = True
-
-    # commit
-    db.session.add(config)
-    db.session.commit()
-
-    # print
-    printConfig(config)
-    print("[+]Done")
-
-
-@cli.command()
-@with_appcontext
-@click.option("--with-register", is_flag=True)
-def close(with_register):
-    """close CTF and/or registration"""
-    config = Config.get()
-    config.is_open = False
-    if with_register:
-        config.register_open = False
+    config.register_open = not close
+    if not register:
+        config.is_open = not close
 
     # commit
     db.session.add(config)
@@ -226,234 +126,177 @@ def close(with_register):
     required="True",
     default="challenges",
 )
-@click.pass_context
-def challenge(ctx, directory):
+def challenge(directory):
     """manage challenges"""
-    dirpath = Path(directory)
-    yamlpath = dirpath / "challenges.yaml"
+    global challenges_dir, challenges
+    challenges_dir = Path(directory)
+    yamlpath = challenges_dir / "challenges.yaml"
     if not yamlpath.exists():
         print("[-] file doesn't exist: {}".format(yamlpath))
         exit()
 
     with yamlpath.open() as f:
-        challs = yaml.safe_load(f)["challenges"]
-    ctx.ensure_object(dict)
-    ctx.obj["dir"] = dirpath
-    ctx.obj["challs"] = Challs(challs, dirpath)
+        challenges = yaml.safe_load(f)["challenges"]
+
+    for name in challenges.keys():
+        challenges[name]["name"] = name
 
 
 @challenge.command("list")
 @with_appcontext
-@click.pass_context
-@click.option("--all", is_flag=True)
-@click.option("--full", is_flag=True)
-def challenge_list(ctx, all, full):
+def challenge_list():
     """list challenges"""
-    for c in ctx.obj["challs"].list(all=all):
-        if full:
-            print(c.dump())
+    challs = {c.name: c for c in Challenge.query.all()}
+    for name, _ in challenges.items():
+        if name not in challs:
+            print("[+]UNREGISTERED {}".format(name))
+        elif challs[name].is_open:
+            print("[+]OPENED       {}".format(name))
         else:
-            print(c.dump_short())
-
-    print("[+]Done")
-
-
-@challenge.command("statistics")
-@with_appcontext
-@click.pass_context
-@click.option("--all", is_flag=True)
-def challenge_statistics(ctx, all):
-    """statistics challenges"""
-    categ_counts = {}
-    completed_count = 0
-    challenge_count = 0
-
-    for c in ctx.obj["challs"].list(all=all):
-        challenge_count += 1
-        if c.completed:
-            completed_count += 1
-        categ_counts[c.category] = categ_counts.get(c.category, 0) + 1
-
-    print("=== Statistics ===")
-    for cat, count in categ_counts.items():
-        print("[+] {}: {} challenges".format(cat, count))
-    print("[+] {}/{} is completed".format(completed_count, challenge_count))
+            print("[+]CLOSED       {}".format(name))
 
 
 @challenge.command("add")
 @with_appcontext
-@click.pass_context
-@click.argument("challenges", nargs=-1)
+@click.argument("names", nargs=-1)
 @click.option("--all", help="add all challenges", is_flag=True)
-def challenge_add(ctx, challenges, all):
+def challenge_add(names, all):
     """add challenges to database"""
-    added = []
-    config = Config.get()
 
-    for c in ctx.obj["challs"].list():  # type: Chall
+    for name, c in challenges.items():  # type: Chall
         # filter
-        if not all and c.name not in challenges:
+        if not all and name not in names:
             continue
 
-        # commit
-        chall = c.column or Challenge()
-        c.setChallenge(chall, config.score_expr)
+        chall = Challenge.query.filter(Challenge.name == name).first() or Challenge()
+        chall.name = name
+        chall.flag = c["flag"]
+        chall.description = c["description"]
+        chall.tags = c["tags"]
+        chall.difficulty = c["difficulty"]
+        chall.author = c["author"]
+        chall.base_score = c["base_score"]
+        chall.score = chall.score or c["base_score"]
+        chall.host = c.get("host")
+        chall.port = c.get("port")
 
         db.session.add(chall)
         db.session.commit()
+        print("[+]ADD {}".format(chall.name))
 
         # delete current attachements
         chall.attachments.delete()
         db.session.commit()
 
-        # archive attachement files
-        distdir = ctx.obj["dir"] / c.normal_name / "distfiles"  # type: Path
-        disttar = "{}.tar.gz".format(c.normal_name)
-        if distdir.exists():
+        # search attachment
+        distfiles = challenges_dir / normal_name(chall.name) / "distfiles"
+        tar_name = "{}.tar.gz".format(normal_name(chall.name))
+        if distfiles.exists():
             # archive
-            with tarfile.open(disttar, "w:gz") as tar:
-                tar.add(distdir, arcname=c.normal_name)
+            with tarfile.open(tar_name, "w:gz") as tar:
+                tar.add(distfiles, arcname=normal_name(chall.name))
 
-            # upload
-            path = uploader.upload_attachment(disttar)
+            # upload && remove
+            url = app.uploader.upload_attachment(tar_name)
+            os.remove(tar_name)
 
-            # remove
-            os.remove(disttar)
-
-            if not path:
-                print("[-] failed to upload attachment")
-
-            # save to database
-            a = Attachment()
-            a.challenge_id = chall.id
-            a.url = path
-            db.session.add(a)
+            # add attachments to challenge
+            attachment = Attachment(url=url, challenge_id=chall.id)
+            db.session.add(attachment)
             db.session.commit()
+            print("  Attachment {}".format(tar_name))
 
-        # ditto
-        distdir = ctx.obj["dir"] / c.normal_name / "distarchive"  # type: Path
-        for distfile in distdir.glob("*"):
-            path = uploader.upload_attachment(distfile)
-            if not path:
-                print("[-] failed to upload attachment")
-                continue
-
-            # save to database
-            a = Attachment()
-            a.challenge_id = chall.id
-            a.url = path
-            db.session.add(a)
-            db.session.commit()
-
-        added.append(c)
-
-    # print
-    for c in added:  # type: Chall
-        print(c.dump())
-    print("[+]Done")
+        distarchive = challenges_dir / normal_name(chall.name) / "distarchive"
+        if distarchive.exists():
+            for tar_name in os.listdir(distarchive):
+                url = app.uploader.upload_attachment(tar_name)
+                attachment = Attachment(url=url, challenge_id=chall.id)
+                db.session.add(attachment)
+                db.session.commit()
+                print("  Attachment {}".format(tar_name))
 
 
 @challenge.command("open")
 @with_appcontext
-@click.pass_context
-@click.argument("challenges", nargs=-1)
+@click.argument("names", nargs=-1)
 @click.option("--all", help="open all challenges", is_flag=True)
 @click.option("--close", help="close instead to open", is_flag=True)
-def challenge_open(ctx, challenges, all, close):
+def challenge_open(names, all, close):
     """open challenges"""
-    opened = []
-
     # commit
-    for c in ctx.obj["challs"].list():  # type: Chall
-        if not all and c.name not in challenges:
+    for name, _ in challenges.items():
+        if not all and name not in names:
             continue
 
-        # check the challenge is in DB
-        chall = c.column
-        if chall is None:
-            print("[-] {} is not in the Database".format(c.name))
+        chall = Challenge.query.filter(Challenge.name == name).first()
+        if not chall:
             continue
 
         chall.is_open = not close
         db.session.add(chall)
         db.session.commit()
-        opened.append(c)
 
-    # print
-    for c in opened:  # type: Chall
-        print(c.dump())
-    print("[+]Done")
+        print("[+]{} {}".format(["OPENED", "CLOSED"][int(close)], chall.name))
 
 
 @challenge.command("recalc")
 @with_appcontext
-@click.pass_context
-def challenge_recalc(ctx):
+def challenge_recalc():
     """recalc challenge scores"""
     config = Config.get()  # type: Config
 
     # commit
-    for c in ctx.obj["challs"].list():  # type: Chall
-        chall = c.column
-        if chall is None:
-            continue
+    for chall in Challenge.query.all():  # type: Chall
         chall.recalc_score(config.score_expr)
 
         db.session.add(chall)
         db.session.commit()
-
-    # print
-    for c in ctx.obj["challs"].list():  # type: Chall
-        if c.column is None:
-            continue
-        print(c.dump())
-    print("[+]Done")
+        print("[+]{}: {}".format(chall.score, chall.name))
 
 
-def check_challenge(challenge, challenge_dir, workspace_name="workspace"):
-    c = challenge
+def check_challenge(challenge, workspace_name="workspace"):
     workspace = Path(workspace_name)
-    solutiondir = challenge_dir / c.normal_name / "solution"
-    solutionscript = solutiondir / "solve.bash"
-    distdir = challenge_dir / c.normal_name / "distfiles"
-    distarchive_dir = challenge_dir / c.normal_name / "distarchive"
+    challengedir = challenges_dir / normal_name(challenge["name"])
+    solutiondir = challengedir / "solution"
+    solutionscript = solutiondir / "solve.sh"
+    distfiles = challengedir / "distfiles"
+    distarchive = challengedir / "distarchive"
 
     if not solutiondir.exists():
-        print("[-] no solution for the challenge: {}".format(c.name))
+        print("[-] no solution for the challenge: {}".format(challenge["name"]))
         exit(1)
 
     if not solutionscript.exists():
-        print("[-] no solution script for the challenge: {}".format(c.name))
+        print("[-] no solution script for the challenge: {}".format(challenge["name"]))
         exit(1)
 
     # create workspace
     shutil.copytree(solutiondir, workspace)
 
     # copy distributed files to solution directory
-    if distdir.exists():
-        for f in distdir.iterdir():
+    if distfiles.is_dir():
+        for f in distfiles.iterdir():
             if f.is_dir():
                 shutil.copytree(f, workspace / f.name)
             else:
                 shutil.copy(f, workspace)
-    if distarchive_dir.exists():
-        for f in distarchive_dir.glob("*.tar.gz"):
+    if distarchive.is_dir():
+        for f in distarchive.glob("*.tar.gz"):
             with tarfile.open(f, "r:gz") as tar:
                 tar.extractall(path=workspace)
 
     # run solver and check output
     try:
         env = dict(os.environ)
-        host = app.config["CATEGORY_SERVERS"].get(c.category)
-        if host:
-            env.update({"CHALLENGE_HOST": host["host"]})
-        if c.port:
-            env.update({"CHALLENGE_PORT": str(c.port)})
+        if challenge.get("host"):
+            env.update({"HOST": challenge.get("host")})
+        if challenge.get("port"):
+            env.update({"PORT": str(challenge.get("port"))})
 
-        result = subprocess.check_output(["bash", "solve.bash"], cwd=workspace, env=env)
+        result = subprocess.check_output(["sh", "solve.sh"], cwd=workspace, env=env)
     except Exception as e:
+        print("[-] {}".format(str(e)))
         result = b""
-        pass
 
     # remove workspace
     shutil.rmtree(workspace)
@@ -468,14 +311,13 @@ def check_challenge(challenge, challenge_dir, workspace_name="workspace"):
 @challenge.command("check")
 @with_appcontext
 @click.argument("challenge")
-@click.pass_context
-def challenge_check(ctx, challenge):
+def challenge_check(challenge):
     """run a check script for the challenge"""
-    c = ctx.obj["challs"].get(challenge)
-    if not c:
+    if challenge not in challenges:
         print("[-] no such challenge")
         return
-    r = check_challenge(c, ctx.obj["dir"])
+
+    r = check_challenge(challenges[challenge])
     if r:
         print("[+] solved")
     else:
@@ -486,112 +328,92 @@ def challenge_check(ctx, challenge):
 @challenge.command("deploy")
 @with_appcontext
 @click.argument("challenge")
-@click.option("--check", is_flag=True)
-@click.pass_context
-def challenge_deploy(ctx, challenge, check):
+def challenge_deploy(challenge):
     """deploy challenge to remote"""
-
     # get chall
-    c = ctx.obj["challs"].get(challenge)
-    if not c:
+    challenge = challenges.get(challenge)
+    if challenge is None:
         print("[-] no such challenge")
         return
 
     # check docker-compose.yaml
-    challenge_dir = ctx.obj["dir"] / c.normal_name
-    compose_file = challenge_dir / "docker-compose.yaml"
-    if not compose_file.exists():
-        compose_file = challenge_dir / "docker-compose.yml"
-        if not compose_file.exists():
+    challengedir = challenges_dir / normal_name(challenge["name"])
+    docker_compose = challengedir / "docker-compose.yaml"
+    if not docker_compose.exists():
+        docker_compose = challengedir / "docker-compose.yml"
+        if not docker_compose.exists():
             print("[-] challenge dosn't have a docker-compose.ya?ml")
             return
 
     # check server settings
-    server = app.config["CATEGORY_SERVERS"].get(c.category)
-    if not server:
-        print("[-] challenge category {} doesn't have a remote server setting")
+    if challenge.get("host") is None:
+        print("[-] no host deply to")
         return
 
     # launch deploy commands
+    ssh_config = app.config["SSH"][challenge["host"]]
     try:
         subprocess.run(
-            [
-                "rsync",
-                "-a",
-                "-e",
-                "ssh",
-                challenge_dir,
-                "{}:~".format(server["ssh_config"]),
-            ]
+            ["rsync", "-a", "-e", "ssh", challengedir, "{}:/tmp/".format(ssh_config)]
         )
         subprocess.run(
             [
                 "ssh",
-                server["ssh_config"],
-                "cd {}; env PORT={} docker-compose up --build -d".format(
-                    c.normal_name, c.port
+                ssh_config,
+                "cd /tmp/{}; env PORT={} docker-compose up --build -d".format(
+                    normal_name(challenge["name"]), challenge["port"]
                 ),
             ]
         )
     except subprocess.SubprocessError as e:
-        print("[-] error on deplyoing")
-        print(e)
+        print("[-] error on deplyoing: {}".format(e))
         exit(1)
 
     print("[+] deploy done")
-    if check:
-        time.sleep(10)
-        r = check_challenge(c, ctx.obj["dir"])
-        if r:
-            print("[+] solved")
-        else:
-            print("[-] unsolved")
-            exit(1)
 
 
 @challenge.command("stop")
 @with_appcontext
 @click.argument("challenge")
-@click.pass_context
-def challenge_stop(ctx, challenge):
+def challenge_stop(challenge):
     """stop running challenge on remote"""
-
     # get chall
-    c = ctx.obj["challs"].get(challenge)
-    if not c:
+    challenge = challenges.get(challenge)
+    if challenge is None:
         print("[-] no such challenge")
         return
 
     # check docker-compose.yaml
-    challenge_dir = ctx.obj["dir"] / c.normal_name
-    compose_file = challenge_dir / "docker-compose.yaml"
-    if not compose_file.exists():
-        compose_file = challenge_dir / "docker-compose.yml"
-        if not compose_file.exists():
+    challengedir = challenges_dir / normal_name(challenge["name"])
+    docker_compose = challengedir / "docker-compose.yaml"
+    if not docker_compose.exists():
+        docker_compose = challengedir / "docker-compose.yml"
+        if not docker_compose.exists():
             print("[-] challenge dosn't have a docker-compose.ya?ml")
             return
 
     # check server settings
-    server = app.config["CATEGORY_SERVERS"].get(c.category)
-    if not server:
-        print("[-] challenge category {} doesn't have a remote server setting")
+    if challenge.get("host") is None:
+        print("[-] no host ")
         return
 
     # launch deploy commands
+    ssh_config = app.config["SSH"][challenge["host"]]
     try:
         subprocess.run(
             [
                 "ssh",
-                server["ssh_config"],
-                "cd {}; env PORT={} docker-compose stop".format(c.normal_name, c.port),
+                ssh_config,
+                "cd /tmp/{}; env PORT={} docker-compose stop".format(
+                    normal_name(challenge["name"]), challenge["port"]
+                ),
             ]
         )
     except subprocess.SubprocessError as e:
-        print("[-] error on stopping")
-        print(e)
+        print("[-] error on stopping: {}".format(e))
         exit(1)
 
-    print("[+] done")
+    print("[+] stopped")
 
 
 if __name__ == "__main__":

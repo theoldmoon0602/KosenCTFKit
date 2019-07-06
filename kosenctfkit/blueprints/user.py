@@ -34,11 +34,13 @@ def register():
         return error("The user `{}` already exists".format(username))
 
     # TODO: check number of members
+    # TODO: send email for verification
 
     user = User()
     user.name = username
     user.password = password
     user.team_id = team.id
+    user.verified = True
 
     team.valid = True
 
@@ -47,9 +49,7 @@ def register():
     db.session.commit()
 
     logger.log(
-        ":heavy_plus_sign: `{}@{}` is registered".format(
-            user.name, user.team.name
-        )
+        ":heavy_plus_sign: `{}@{}` is registered".format(user.name, user.team.name)
     )
     return jsonify({"id": user.id, "name": user.name})
 
@@ -70,6 +70,9 @@ def login():
 
     if not user.check_password(password):
         return error("Invalid password")
+
+    if not user.verified:
+        return error("Unverified user")
 
     session["user_id"] = user.id
     return "", 204

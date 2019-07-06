@@ -78,17 +78,13 @@ def get_challenges():
         ret[c.id] = {
             "id": c.id,
             "name": c.name,
-            "category": c.category,
+            "tags": c.tags,
             "author": c.author,
-            "testers": c.testers,
             "score": c.score,
-            "solved": c.solve_num,
-            "description": c.description.replace(
-                "{{host}}",
-                current_app.config["CATEGORY_SERVERS"].get(c.category, {"host": ""})[
-                    "host"
-                ],
-            ).replace("{{port}}", str(c.port or "")),
+            "solved": c.solve_count,
+            "description": c.description.replace("{{host}}", c.host or "").replace(
+                "{{port}}", str(c.port or "")
+            ),
             "attachments": [as_url(current_app, a.url) for a in c.attachments.all()],
             "difficulty": c.difficulty,
         }

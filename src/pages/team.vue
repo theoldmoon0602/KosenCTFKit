@@ -20,7 +20,7 @@
                 .card.col-12.col-md-6(v-for="cid in team.solved" v-if="challenge(cid)")
                     .card-body
                         .card-title {{ challenge(cid).name }}
-                        .card-text {{ challenge(cid).category }} [{{challenge(cid).score}}points]
+                        .card-text [{{challenge(cid).score}}points]
 
 
 </template>

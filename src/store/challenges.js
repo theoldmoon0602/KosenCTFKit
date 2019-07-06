@@ -9,21 +9,6 @@ export default {
         getChallenges(state) {
             return state.challenges
         },
-        getChallengesWithCategory(state) {
-            let cs = {};
-            for (let c of Object.values(state.challenges)) {
-                if (! cs[c.category]) {
-                    cs[c.category] = []
-                }
-                cs[c.category].push(c)
-            }
-            for (let k of Object.keys(cs)) {
-                cs[k].sort((a,b) => {
-                    return a.score - b.score
-                })
-            }
-            return cs
-        },
     },
     mutations: {
         setChallenges(state, challenges) {

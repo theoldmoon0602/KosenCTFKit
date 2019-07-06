@@ -1,8 +1,9 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm.exc import DetachedInstanceError
+from sqlalchemy.types import ARRAY
 from sqlalchemy import desc
 from datetime import datetime
 from binascii import hexlify, unhexlify
+from secrets import token_hex
 import bcrypt
 
 db = SQLAlchemy()
@@ -13,6 +14,10 @@ class User(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(512), unique=True, nullable=False)
+    email = db.Column(db.String(512), unique=True, nullable=False)
+    verified = db.Column(db.Boolean, default=False)
+    reset_token = db.Column(db.String(512), unique=True)
+    token_limit = db.Column(db.Integer)
     password_hash = db.Column(db.String(512), nullable=False)
     team_id = db.Column(db.Integer, db.ForeignKey("teams.id"))
     icon = db.Column(db.Text)
@@ -25,7 +30,13 @@ class User(db.Model):
 
     @password.setter
     def password(self, pw):
-        self.password_hash = hexlify(bcrypt.hashpw(pw.encode("utf-8"), bcrypt.gensalt())).decode("utf-8")
+        self.password_hash = hexlify(
+            bcrypt.hashpw(pw.encode("utf-8"), bcrypt.gensalt())
+        ).decode("utf-8")
+
+    def issueResetToken(limit=60 * 60):
+        self.reset_token = token_hex(32)
+        self.token_limit = int(datetime.utcnow().timestamp()) + limit
 
     def check_password(self, pw):
         return bcrypt.checkpw(pw.encode("utf-8"), unhexlify(self.password_hash))
@@ -114,47 +125,34 @@ class Team(db.Model):
             return 0
 
     def renewToken(self):
-        from secrets import token_hex
-
-        self.token = token_hex(16)
+        self.token = token_hex(32)
 
 
 class Challenge(db.Model):
     __tablename__ = "challenges"
 
     id = db.Column(db.Integer, primary_key=True)
-    category = db.Column(db.String(512), nullable=False)
     name = db.Column(db.String(512), unique=True, nullable=False)
     flag = db.Column(db.String(512), nullable=False)
     description = db.Column(db.Text, nullable=False)
+    tags = db.Column(ARRAY(db.String(512)), nullable=False)
+    difficulty = db.Column(db.String(512))
     author = db.Column(db.String(512), nullable=False)
-    tester_array = db.Column(db.Text, nullable=False)
     base_score = db.Column(db.Integer, nullable=False)
     score = db.Column(db.Integer, nullable=False)
     is_open = db.Column(db.Boolean, nullable=False, default=False)
+    host = db.Column(db.String(512))
     port = db.Column(db.Integer)
-    difficulty = db.Column(db.String(512))
     attachments = db.relationship("Attachment", backref="challenge", lazy="dynamic")
     submissions = db.relationship("Submission", backref="challenge", lazy="dynamic")
 
     @property
-    def testers(self):
-        return self.tester_array.split(",")
-
-    @testers.setter
-    def testers(self, tester_list):
-        self.tester_array = ",".join(tester_list)
-
-    @property
-    def solve_num(self):
-        try:
-            count = self.submissions.filter(Submission.is_valid == True).count()
-            return count
-        except DetachedInstanceError:
-            return 0
+    def solve_count(self):
+        count = self.submissions.filter(Submission.is_valid == True).count()
+        return count
 
     def recalc_score(self, expr):
-        new_score = int(eval(expr, {"N": self.solve_num, "V": self.base_score}))
+        new_score = int(eval(expr, {"N": self.solve_count, "V": self.base_score}))
         self.score = new_score
         return new_score
 
