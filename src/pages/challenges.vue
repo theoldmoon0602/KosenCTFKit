@@ -6,10 +6,11 @@
         .card(v-for="chal in challenges()" v-bind:class="{'border-success' : is_solved(chal.id)}")
             h5.card-header(v-bind:class="{'bg-success': is_solved(chal.id)}")
                 a.trigger(data-toggle="collapse"  aria-expanded="true" :data-target="'#chal-' + chal.id" :aria-controls="'chal-'+chal.id")
-                    span.badge.badge-info {{chal.difficulty}}
-                    span.badge.badge-primary(v-for="tag in chal.tags") {{ tag }}
                     |{{ chal.name }}
                     small.small [{{ chal.score }}] - {{ chal.solved }} solved
+                    span.float-right
+                        span.badge.badge-info {{chal.difficulty}}
+                        span.badge.badge-primary(v-for="tag in chal.tags") {{ tag }}
             .collapse(:id="'chal-'+chal.id")
                 .card-body.col-12.col-md-8.mx-auto
                     .card-text
@@ -62,6 +63,10 @@ export default Vue.extend({
             let challenges = this.$store.getters.getChallenges;
             for (let i of Object.keys(challenges)) {
                 let challenge = challenges[i]
+                if (challenge.difficulty.includes(this.filter)) {
+                    filtered.push(challenge)
+                    continue;
+                }
                 for (let tag of challenge.tags) {
                     if (tag.includes(this.filter)) {
                         filtered.push(challenge)
