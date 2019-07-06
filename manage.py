@@ -209,7 +209,7 @@ def challenge_add(names, all):
         distarchive = challenges_dir / normal_name(chall.name) / "distarchive"
         if distarchive.exists():
             for tar_name in os.listdir(distarchive):
-                url = app.uploader.upload_attachment(tar_name)
+                url = app.uploader.upload_attachment(distarchive / tar_name)
                 attachment = Attachment(url=url, challenge_id=chall.id)
                 db.session.add(attachment)
                 db.session.commit()
