@@ -1,9 +1,24 @@
+servers:
+  ?: &web_host localhost
+  ?: &crypto_host 192.168.0.10
+
 challenges:
   Download:
-    category: reversing
-    author: theoldmoon0602
     flag: KosenCTF{download}
-    description: "<p>Download it.</p>"
-    completed: True
-    testers: []
+    description: "Download it."
+    author: theoldmoon0602
+    tags:
+      - reversing
+    difficulty: easy
     base_score: 1000
+  Welcome:
+    flag: KosenCTF{welcome_to_the_kosen_ctf}
+    description: '<a href="://{{host}}:{{port}}">welcome</a>'
+    author: theoldmoon0602
+    tags:
+      - web
+      - welcome
+    difficulty: easy
+    base_score: 1000
+    host: *web_host
+    port: 10000

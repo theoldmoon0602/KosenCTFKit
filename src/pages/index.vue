@@ -13,7 +13,7 @@
             li
                 | The score of every challenge is calculated by the following formula:
                 pre
-                    code dynamic_score = max(200, (base_score**2) / (base_score + (base_score/10) * (0 if solve_num == 1 else solve_num)))
+                    code dynamic_score = max(200, (base_score**2) / (base_score + (base_score/10) * (0 if solve_count == 1 else solve_count)))
             li There is no limit in the number of your team members.
             li There is no prize.
             li

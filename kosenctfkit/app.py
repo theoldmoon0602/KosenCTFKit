@@ -46,6 +46,7 @@ def init_app(app, config):
     if "WEBHOOK_URL" in app.config:
         logger.init(app.config["WEBHOOK_URL"])
     uploader.init(app)
+    app.uploader = uploader
 
     app.config["FLASK_ADMIN_SWATCH"] = "cerulean"
     admin = Admin(app, name="admin", template_mode="bootstrap3")

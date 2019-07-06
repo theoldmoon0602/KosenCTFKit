@@ -1,0 +1,7 @@
+version: '3'
+services:
+  welcome:
+    build: .
+    restart: always
+    ports:
+      - ${PORT:-10000}:80
