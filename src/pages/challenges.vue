@@ -1,6 +1,9 @@
 <template lang="pug">
     div
-        .card(v-for="chal in challenges" v-bind:class="{'border-success' : is_solved(chal.id)}")
+        .form-group
+            label.d-block(for="filter") filter by tags
+            input.form-control#filter(type="text" v-model="filter")
+        .card(v-for="chal in challenges()" v-bind:class="{'border-success' : is_solved(chal.id)}")
             h5.card-header(v-bind:class="{'bg-success': is_solved(chal.id)}")
                 a.trigger(data-toggle="collapse"  aria-expanded="true" :data-target="'#chal-' + chal.id" :aria-controls="'chal-'+chal.id")
                     span.badge.badge-info {{chal.difficulty}}
@@ -27,6 +30,11 @@
 import Vue from 'vue'
 import axios from 'axios'
 export default Vue.extend({
+    data() {
+        return {
+            filter: ''
+        }
+    },
     methods: {
         submit(e) {
             let data = new FormData(e.target)
@@ -46,11 +54,25 @@ export default Vue.extend({
             }
             return false
         },
+        challenges() {
+            if (! this.filter) {
+                return this.$store.getters.getChallenges;
+            }
+            let filtered = [];
+            let challenges = this.$store.getters.getChallenges;
+            for (let i of Object.keys(challenges)) {
+                let challenge = challenges[i]
+                for (let tag of challenge.tags) {
+                    if (tag.includes(this.filter)) {
+                        filtered.push(challenge)
+                        break;
+                    }
+                }
+            }
+            return filtered;
+        },
     },
     computed: {
-        challenges() {
-            return this.$store.getters.getChallenges;
-        },
     }
 })
 </script>
