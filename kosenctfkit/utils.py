@@ -70,24 +70,30 @@ def get_user_and_team(user, valid_only):
     )
 
 
-def get_challenges():
+def get_challenges(abst=False):
     cs = Challenge.query.filter(Challenge.is_open == True).all()
     ret = {}
 
     for c in cs:
-        ret[c.id] = {
-            "id": c.id,
-            "name": c.name,
-            "tags": c.tags,
-            "author": c.author,
-            "score": c.score,
-            "solved": c.solve_count,
-            "description": c.description.replace("{{host}}", c.host or "").replace(
-                "{{port}}", str(c.port or "")
-            ),
-            "attachments": [as_url(current_app, a.url) for a in c.attachments.all()],
-            "difficulty": c.difficulty,
-        }
+        if abst:
+            ret[c.id] = {"id": c.id, "name": c.name, "score": c.score}
+        else:
+            ret[c.id] = {
+                "id": c.id,
+                "name": c.name,
+                "tags": c.tags,
+                "author": c.author,
+                "score": c.score,
+                "solved": c.solve_count,
+                "description": c.description.replace("{{host}}", c.host or "").replace(
+                    "{{port}}", str(c.port or "")
+                ),
+                "attachments": [
+                    as_url(current_app, a.url) for a in c.attachments.all()
+                ],
+                "difficulty": c.difficulty,
+            }
+
     return ret
 
 

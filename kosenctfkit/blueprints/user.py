@@ -10,6 +10,9 @@ user = Blueprint("user_", __name__)
 
 @user.route("/register", methods=["POST"])
 def register():
+    if not Config.get().register_open:
+        return error("Registration is closed")
+
     token = request.json.get("token", "").strip()
     if not token:
         return error("Token is required")
@@ -26,9 +29,6 @@ def register():
     if not team:
         return error("The token is invalid")
 
-    if not Config.get().register_open:
-        return error("Registration is closed")
-
     user = User.query.filter(User.name == username).first()
     if user:
         return error("The user `{}` already exists".format(username))
@@ -39,6 +39,7 @@ def register():
     user = User()
     user.name = username
     user.password = password
+    user.email = username + "@example.com"
     user.team_id = team.id
     user.verified = True
 
