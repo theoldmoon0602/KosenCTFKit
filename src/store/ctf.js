@@ -1,22 +1,30 @@
+import axios from 'axios'
+import Vue from 'vue'
+
 export default {
     state: {
         name: undefined,
         ctf_open: false,
         ctf_frozen: false,
+        start_at: 0,
+        end_at: 0,
         register_open: false,
-        users: [],
-        teams: [],
-        scoreboard: []
+        users: {},
+        teams: {},
+        submissions: {},
     },
     getters: {
-        getScoreboard(state) {
-            return state.scoreboard;
-        },
         getCTFName(state) {
             return state.name
         },
         getUsers(state) {
             return state.users
+        },
+        getCTFStart(state) {
+            return state.start_at
+        },
+        getCTFEnd(state) {
+            return state.end_at
         },
         getTeams(state) {
             return state.teams
@@ -29,6 +37,9 @@ export default {
         },
         registerOpen(state) {
             return state.register_open;
+        },
+        getSubmissions(state) {
+            return state.submissions
         }
     },
     mutations: {
@@ -38,17 +49,30 @@ export default {
             state.ctf_open = info.ctf_open
             state.ctf_frozen = info.ctf_frozen
             state.register_open = info.register_open
+            state.start_at = new Date(info.start_at)
+            state.end_at = new Date(info.end_at)
         },
         setUsers(state, users) {
-            Object.assign(state.users, users)
+            Vue.set(state, 'users', users)
         },
         setTeams(state, teams) {
-            Object.assign(state.teams, teams)
+            Vue.set(state, 'teams', teams)
         },
-        setScoreboard(state, scoreboard) {
-            Object.assign(state.scoreboard, scoreboard)
-        },
+        setSubmissions(state, submissions) {
+            Vue.set(state, 'submissions', submissions)
+        }
     },
     actions: {
+        getSubmissions(context) {
+            return axios.get('/submissions')
+                .then(r => {
+                    context.commit('setSubmissions', r.data)
+                    return r
+                })
+                .catch(e => {
+                    context.dispatch('setError', e.response.data['message'])
+                    return false
+                })
+        }
     }
 }

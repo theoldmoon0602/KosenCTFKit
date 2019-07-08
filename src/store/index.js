@@ -34,13 +34,14 @@ export default new Vuex.Store({
                     }
                     context.commit('setUsers', r.data['users'])
                     context.commit('setTeams', r.data['teams'])
-                    context.commit('setScoreboard', r.data['scoreboard'])
                     context.commit('setChallenges', r.data['challenges'])
                     context.commit('setCTFInfo', {
                         name: r.data['ctf_name'],
                         ctf_open: r.data['ctf_open'],
                         ctf_frozen: r.data['ctf_frozen'],
                         register_open: r.data['register_open'],
+                        start_at: r.data['start_at'],
+                        end_at: r.data['end_at'],
                     })
                     context.commit('setConnectionStatus', true);
                     return r

@@ -63,6 +63,10 @@ export default Vue.extend({
             let challenges = this.$store.getters.getChallenges;
             for (let i of Object.keys(challenges)) {
                 let challenge = challenges[i]
+                if (challenge.name.includes(this.filter)) {
+                    filtered.push(challenge)
+                    continue;
+                }
                 if (challenge.difficulty.includes(this.filter)) {
                     filtered.push(challenge)
                     continue;
