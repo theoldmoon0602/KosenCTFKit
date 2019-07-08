@@ -1,7 +1,7 @@
 <template lang="pug">
     div
         .form-group
-            label.d-block(for="filter") filter by tags
+            label.d-block(for="filter") filter challenges by name, difficulty, tags
             input.form-control#filter(type="text" v-model="filter")
         .card(v-for="chal in challenges()" v-bind:class="{'border-success' : is_solved(chal.id)}")
             h5.card-header(v-bind:class="{'bg-success': is_solved(chal.id)}")
