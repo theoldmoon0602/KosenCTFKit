@@ -1,4 +1,5 @@
 import axios from 'axios'
+import Vue from 'vue'
 
 export default {
     state: {
@@ -8,9 +9,9 @@ export default {
         start_at: 0,
         end_at: 0,
         register_open: false,
-        users: [],
-        teams: [],
-        submissions: [],
+        users: {},
+        teams: {},
+        submissions: {},
     },
     getters: {
         getCTFName(state) {
@@ -37,7 +38,7 @@ export default {
         registerOpen(state) {
             return state.register_open;
         },
-        getSubmissions(state, submissions) {
+        getSubmissions(state) {
             return state.submissions
         }
     },
@@ -52,13 +53,13 @@ export default {
             state.end_at = new Date(info.end_at)
         },
         setUsers(state, users) {
-            Object.assign(state.users, users)
+            Vue.set(state, 'users', users)
         },
         setTeams(state, teams) {
-            Object.assign(state.teams, teams)
+            Vue.set(state, 'teams', teams)
         },
         setSubmissions(state, submissions) {
-            Object.assign(state.submissions, submissions)
+            Vue.set(state, 'submissions', submissions)
         }
     },
     actions: {

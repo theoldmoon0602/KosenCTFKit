@@ -51,13 +51,16 @@ import Vue from 'vue'
 import axios from 'axios'
 export default Vue.extend({
     mounted() {
-        this.$store.dispatch('update')
-
         // polling
         this.$store.dispatch('update')
         setInterval(() => {
             this.$store.dispatch('update')
-        }, 1000 * 30)
+        }, 1000 * 30) // every 30 seconds
+
+        this.$store.dispatch('getSubmissions')
+        setInterval(() => {
+            this.$store.dispatch('getSubmissions')
+        }, 1000*60*10)  // every 10 minutes
     },
     methods: {
         hi() {
