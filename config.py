@@ -16,6 +16,9 @@ class DefaultConfig:
     STATIC_DIR = "static"
     ICON_DIR = "icons"
 
+    EMAIL = "kosenctf@example.com"
+    EMAIL_PASSWORD = "emailaccountspassword"
+
     CTF_NAME = "KosenCTF"
     START_AT = pytz.timezone("Asia/Tokyo").localize(datetime(2019, 1, 1, 0, 0, 0))
     END_AT = pytz.timezone("Asia/Tokyo").localize(datetime(2020, 1, 1, 0, 0, 0))
