@@ -10,6 +10,8 @@ import players from './pages/players.vue'
 import user from './pages/user.vue'
 import team from './pages/team.vue'
 import confirm from './pages/confirm.vue'
+import resetrequest from './pages/resetrequest.vue'
+import reset from './pages/reset.vue'
 
 Vue.use(Router)
 
@@ -50,6 +52,14 @@ export default new Router({
         {
             path: '/confirm/:token',
             component: confirm,
+        },
+        {
+            path: '/reset',
+            component: resetrequest,
+        },
+        {
+            path: '/reset/:token',
+            component: reset,
         },
     ]
 })

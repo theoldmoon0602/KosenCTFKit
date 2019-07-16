@@ -112,7 +112,13 @@ h1,h2,h3,h4 {
 .icon {
     max-width: 256px;
 }
-input[type=text], input[type=password] {
+form {
+  padding: 20px;
+}
+label {
+  margin-bottom: 0 !important;
+}
+input[type=text], input[type=password], input[type=email] {
     &:focus {
         background-color: #fff;
     }
