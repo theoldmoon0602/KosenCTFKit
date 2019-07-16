@@ -9,11 +9,11 @@
             | [{{user.score}}points]
 
 
-        .custom-file
-            input.custom-file-input#icon(type="file" accept="image/*" required @change="selectIcon")
-            label.custom-file-label(for="icon") Upload Icon
 
-        div(v-if="loginUser && user.id == loginUser.id")
+        template(v-if="loginUser && user.id == loginUser.id")
+            .custom-file
+                input.custom-file-input#icon(type="file" accept="image/*" required @change="selectIcon")
+                label.custom-file-label(for="icon") Upload Icon
             form(@submit.prevent="updatePassword")
                 .form-group
                     label.d-block(for="current_password") current password
