@@ -9,6 +9,7 @@ import scoreboard from './pages/scoreboard.vue'
 import players from './pages/players.vue'
 import user from './pages/user.vue'
 import team from './pages/team.vue'
+import confirm from './pages/confirm.vue'
 
 Vue.use(Router)
 
@@ -45,6 +46,10 @@ export default new Router({
         {
             path: '/team/:team_id',
             component: team,
+        },
+        {
+            path: '/confirm/:token',
+            component: confirm,
         },
     ]
 })

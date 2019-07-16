@@ -34,9 +34,19 @@ class User(db.Model):
             bcrypt.hashpw(pw.encode("utf-8"), bcrypt.gensalt())
         ).decode("utf-8")
 
-    def issueResetToken(limit=60 * 60):
+    def issueResetToken(self, limit=60 * 60):
         self.reset_token = token_hex(32)
         self.token_limit = int(datetime.utcnow().timestamp()) + limit
+
+    def checkToken(self, token):
+        return (
+            self.reset_token == token
+            and datetime.utcnow().timestamp() <= self.token_limit
+        )
+
+    def revokeToken(self):
+        self.reset_token = None
+        self.token_limit = 0
 
     def check_password(self, pw):
         return bcrypt.checkpw(pw.encode("utf-8"), unhexlify(self.password_hash))
@@ -83,7 +93,7 @@ class Team(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(512), unique=True, nullable=False)
-    token = db.Column(db.String(256), unique=True, nullable=False)
+    token = db.Column(db.String(256), unique=True)
     members = db.relationship("User", backref="team", lazy="dynamic")
     valid = db.Column(db.Boolean, nullable=False, default=False)
     submissions = db.relationship("Submission", backref="team", lazy="dynamic")

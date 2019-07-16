@@ -1,4 +1,6 @@
-from flask import Blueprint, request, jsonify, session
+from flask import Blueprint, request, jsonify, session, current_app
+import os.path
+from sqlalchemy.exc import IntegrityError
 from kosenctfkit.models import db, Config, Team, User
 from kosenctfkit.utils import error, login_required
 from kosenctfkit.logging import logger
@@ -8,46 +10,115 @@ from kosenctfkit.uploader import uploader
 user = Blueprint("user_", __name__)
 
 
+def send_verification_mail(user: User):
+    import smtplib
+    from email.mime.text import MIMEText
+
+    from_address = current_app.config["EMAIL"]
+    to_address = user.email
+
+    msg = MIMEText(
+        """Hi, {username}.
+You have just registered to {ctf}. Please confirm your email address to access the following link.
+{address}
+    """.format(
+            username=user.name,
+            ctf=current_app.config["CTF_NAME"],
+            address=os.path.join(request.url_root, "#/confirm/" + user.reset_token),
+        )
+    )
+    msg["Subject"] = "{} Registration confirm".format(current_app.config["CTF_NAME"])
+    msg["From"] = from_address
+    msg["To"] = to_address
+
+    s = smtplib.SMTP_SSL("smtp.gmail.com", 465)
+    s.ehlo()
+    s.login(from_address, current_app.config["EMAIL_PASSWORD"])
+    s.sendmail(from_address, to_address, msg.as_string())
+    s.close()
+
+
+@user.route("/confirm", methods=["POST"])
+def confirm():
+    token = request.json.get("token", "").strip()
+    if not token:
+        return error("The token is required")
+
+    user = User.query.filter(User.reset_token == token).first()
+    if not user:
+        return error("The token is invalid")
+
+    if not user.checkToken(token):
+        return error("The token is invalid or outdated")
+
+    # TODO check the number of teammates
+
+    user.verified = True
+    if not user.team.valid:
+        user.team.valid = True
+        user.team.renewToken()
+    user.revokeToken()
+    db.session.add(user)
+    db.session.add(user.team)
+    db.session.commit()
+
+    return "", 204
+
+
 @user.route("/register", methods=["POST"])
 def register():
     if not Config.get().register_open:
         return error("Registration is closed")
 
-    token = request.json.get("token", "").strip()
-    if not token:
-        return error("Token is required")
-
     username = request.json.get("username", "").strip()
     if not username:
         return error("Username is required")
+    user = User.query.filter(User.name == username).first()
+    if user:
+        return error("The user `{}` already exists".format(username))
+
+    email = request.json.get("email", "").strip()
+    if not email:
+        return error("Email address is required")
+    user = User.query.filter(User.email == email).first()
+    if user:
+        return error("The email address is already used")
+    # TODO: check email format
 
     password = request.json.get("password", "").strip()
     if not password:
         return error("Password is required")
 
-    team = Team.query.filter(Team.token == token).first()
-    if not team:
-        return error("The token is invalid")
+    if request.json.get("teamtoken"):
+        token = request.json.get("teamtoken").strip()
+        team = Team.query.filter(Team.token == token, Team.valid == True).first()
+        if not team:
+            return error("The token is invalid")
+    elif request.json.get("teamname"):
+        teamname = request.json.get("teamname").strip()
+        team = Team.query.filter(Team.name == teamname).first()
+        if team and team.valid:
+            return error("The team `{}` already exists".format(teamname))
 
-    user = User.query.filter(User.name == username).first()
-    if user:
-        return error("The user `{}` already exists".format(username))
-
-    # TODO: check number of members
-    # TODO: send email for verification
+        team = Team(name=teamname)
+        team.valid = False
+        db.session.add(team)
+        db.session.commit()
+    else:
+        return error("Either team token or team name is required")
 
     user = User()
     user.name = username
     user.password = password
-    user.email = username + "@example.com"
+    user.email = email
     user.team_id = team.id
-    user.verified = True
+    user.verified = False
+    user.issueResetToken()
 
-    team.valid = True
-
-    db.session.add(team)
     db.session.add(user)
     db.session.commit()
+
+    send_verification_mail(user)
 
     logger.log(
         ":heavy_plus_sign: `{}@{}` is registered".format(user.name, user.team.name)
@@ -71,9 +142,6 @@ def login():
 
     if not user.check_password(password):
         return error("Invalid password")
-
-    if not user.verified:
-        return error("Unverified user")
 
     session["user_id"] = user.id
     return "", 204

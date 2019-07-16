@@ -37,10 +37,10 @@ export default {
                     return false
                 })
         },
-        register(context, userinfo) {
-            return axios.post('/register', userinfo)
+        register(context, userninfo) {
+            return axios.post('/register', userninfo)
                 .then(r => {
-                    context.dispatch('setMessage', 'The user "'+ r.data['name'] + '" is successfully registered.')
+                    context.dispatch('setMessage', 'You has just registered. Please check your e-mail box to confirm')
                     return r
                 })
                 .catch(e => {
@@ -48,16 +48,17 @@ export default {
                     return false
                 })
         },
-        registerTeam(context, teaminfo) {
-            return axios.post('/register-team', teaminfo)
+        confirm(context, token) {
+            return axios.post('/confirm', token)
                 .then(r => {
-                    context.dispatch('setMessage', 'The team "'+ teaminfo.teamname +'" has just registered. Next, register as an user')
+                    context.dispatch('setMessage', 'Confirmed')
                     return r
                 })
                 .catch(e => {
                     context.dispatch('setError', e.response.data['message'])
                     return false
                 })
+
         },
         updatePassword(context, passwordinfo) {
             return axios.post('/password-update', passwordinfo, {
