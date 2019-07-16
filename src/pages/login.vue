@@ -7,8 +7,9 @@
             .form-group
                 label.d-block(for="password") password
                 input#password(type="password" v-model="password" required class="form-control" placeholder="password")
-            button.btn.btn-primary(type="submit") Login
-
+            button.btn.btn-primary.float-right(type="submit") Login
+            p
+                router-link(to="/reset") reset your password
 
 </template>
 

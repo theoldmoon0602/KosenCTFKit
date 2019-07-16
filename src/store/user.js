@@ -70,6 +70,28 @@ export default {
                     return false
                 })
         },
+        resetRequest(context, userinfo) {
+            return axios.post('/reset-request', userinfo)
+                .then(r => {
+                    context.dispatch('setMessage', 'The password reset mail has been sent')
+                    return r
+                })
+                .catch(e => {
+                    context.dispatch('setError', e.response.data['message'])
+                    return false
+                })
+        },
+        reset(context, userinfo) {
+            return axios.post('/reset', userinfo)
+                .then(r => {
+                    context.dispatch('setMessage', 'Your password has been updated')
+                    return r
+                })
+                .catch(e => {
+                    context.dispatch('setError', e.response.data['message'])
+                    return false
+                })
+        },
         updatePassword(context, passwordinfo) {
             return axios.post('/password-update', passwordinfo, {
                 withCredentials: true
