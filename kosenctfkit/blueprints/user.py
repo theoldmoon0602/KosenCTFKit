@@ -149,7 +149,6 @@ def confirm():
     if not user.checkToken(token):
         return error("The token is invalid or outdated")
 
-    # TODO check the number of teammates
 
     user.verified = True
     if not user.team.valid:
@@ -182,6 +181,7 @@ def register():
     if user:
         return error("The email address is already used")
     # TODO: check email format
+    # TODO check the number of teammates
 
     password = request.json.get("password", "").strip()
     if not password:

@@ -120,11 +120,12 @@ label {
 }
 input[type=text], input[type=password], input[type=email] {
     &:focus {
-        background-color: #fff;
+        background-color: transparent;
     }
-    background-color: #fff;
+    background-color: transparent;
     text-align: center;
-    border-radius: 0;
+    border-radius: 4px;
+    border: solid 2px #ccc;
 }
 </style>
 
@@ -190,13 +191,13 @@ input[type=text], input[type=password], input[type=email] {
 .message p {
     position: relative;
     max-width: 200px;
-    background: #fff;
-    border: 5px solid #bbb;
-    padding: 10px;
+    background-color: #bbb;
+    border-radius: 2px;
+    padding: 20px;
     top: 20px;
 }
 .message p.error {
-    border-color: #f99;
+  background-color: #f99;
 }
 .message img {
     max-width: 100px;
