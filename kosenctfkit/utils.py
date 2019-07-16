@@ -56,12 +56,16 @@ def as_url(app, path):
 
 def get_user_and_team(user, valid_only):
     return (
+        # user
         {
             "id": user.id,
             "name": user.name,
+            "email": user.email,
+            "verified": user.verified,
             "team": user.team.name if user.team else None,
             "team_id": user.team.id if user.team else None,
         },
+        # team
         {
             "id": user.team.id if user.team else None,
             "name": user.team.name if user.team else None,

@@ -38,6 +38,29 @@ You have just registered to {ctf}. Please confirm your email address to access t
     s.close()
 
 
+@user.route("/resend", methods=["POST"])
+@login_required
+def resend(user):
+    email = request.json.get("email", "").strip()
+    if not email:
+        return error("Email address is required")
+
+    if user.verified:
+        return error("You are already verified")
+
+    u2 = User.query.filter(User.email == email).first()
+    if u2 and u2.id != user.id:
+        return error("The email address is already used")
+
+    user.email = email
+    user.issueResetToken()
+    db.session.add(user)
+    db.session.commit()
+
+    send_verification_mail(user)
+    return "", 204
+
+
 @user.route("/confirm", methods=["POST"])
 def confirm():
     token = request.json.get("token", "").strip()

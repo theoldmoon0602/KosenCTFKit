@@ -1,31 +1,37 @@
 <template lang="pug">
     .col-12.col-lg-8.offset-lg-2
         h3.h3
+            img.icon(:src="user.icon" :alt="user.name" v-if="user.icon")
             |{{ user.name }}
             template(v-if="user.team")
                 |@
                 router-link(:to="'/team/'+user.team_id") {{user.team}}
             | [{{user.score}}points]
 
-        div(v-if="user.icon")
-            img.icon(:src="user.icon" :alt="user.name")
+
+        .custom-file
+            input.custom-file-input#icon(type="file" accept="image/*" required @change="selectIcon")
+            label.custom-file-label(for="icon") Upload Icon
 
         div(v-if="loginUser && user.id == loginUser.id")
-            h5.h5 Update Password
             form(@submit.prevent="updatePassword")
                 .form-group
                     label.d-block(for="current_password") current password
-                    input#current_password(type="password" name="current_password" required class="form-control")
+                    input.form-control(type="password" name="current_password" required)
                 .form-group
                     label.d-block(for="new_password") new password
-                    input#new_password(type="password" name="new_password" required class="form-control")
-                button.btn.btn-primary(type="submit") Update Password
+                    input.form-control#new_password(type="password" name="new_password" required)
+                button.btn.btn-primary.float-right(type="submit") Update Password
 
-            h5.h5 Upload Icon
-            .custom-file
-                input.custom-file-input#icon(type="file" accept="image/*" required @change="selectIcon")
-                label.custom-file-label(for="icon") Upload Icon
-
+            div(v-if="loginUser.verified")
+                label this address is verified
+                .form-group
+                    input.form-control(type="email" :value="loginUser.email" disabled)
+            form(@submit.prevent="resendVerificationMail" v-else)
+                .form-group
+                    label.d-block(for="email") email
+                    input.form-control#email(type="email" v-model="email" :placeholder="loginUser.email" name="email" required)
+                button.btn.btn-primary.float-right(type="submit") Resend Verification Mail
 
         h4.h4 Solved Challenges
             .row
@@ -40,6 +46,11 @@
 import Vue from 'vue'
 import axios from 'axios'
 export default Vue.extend({
+    data() {
+        return {
+            email: ''
+        }
+    },
     methods: {
         challenge(cid) {
             let challenges = this.$store.getters.getChallenges;
@@ -66,6 +77,11 @@ export default Vue.extend({
             }, false)
             fileReader.readAsDataURL(f);
         },
+        resendVerificationMail() {
+            this.$store.dispatch('resendVerificationMail', {
+                email: this.email
+            })
+        },
     },
     computed: {
         user() {
@@ -80,3 +96,10 @@ export default Vue.extend({
 })
 </script>
 
+<style scoped>
+img {
+    height: 1.2em;
+    width: 1.2em;
+    vertical-align: middle;
+}
+</style>

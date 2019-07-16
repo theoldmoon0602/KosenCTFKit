@@ -58,7 +58,17 @@ export default {
                     context.dispatch('setError', e.response.data['message'])
                     return false
                 })
-
+        },
+        resendVerificationMail(context, email) {
+            return axios.post('/resend', email)
+                .then(r => {
+                    context.dispatch('setMessage', 'Verification mail has been sent')
+                    return r
+                })
+                .catch(e => {
+                    context.dispatch('setError', e.response.data['message'])
+                    return false
+                })
         },
         updatePassword(context, passwordinfo) {
             return axios.post('/password-update', passwordinfo, {
