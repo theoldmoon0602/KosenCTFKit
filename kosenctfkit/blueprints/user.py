@@ -149,7 +149,6 @@ def confirm():
     if not user.checkToken(token):
         return error("The token is invalid or outdated")
 
-
     user.verified = True
     if not user.team.valid:
         user.team.valid = True
@@ -199,7 +198,7 @@ def register():
             return error("The team `{}` already exists".format(teamname))
 
         team = Team(name=teamname)
-        team.valid = False
+        team.valid = True
         db.session.add(team)
         db.session.commit()
     else:
