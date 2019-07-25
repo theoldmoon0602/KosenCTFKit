@@ -5,63 +5,70 @@ from kosenctfkit.models import db, Config, Team, User
 from kosenctfkit.utils import error, login_required
 from kosenctfkit.logging import logger
 from kosenctfkit.uploader import uploader
+from threading import Thread
 
 
 user = Blueprint("user_", __name__)
 
 
+def sendmail_async(
+    body: str, subject: str, to_address: str, from_address: str, password: str
+):
+    def dofunc():
+        import smtplib
+        from email.mime.text import MIMEText
+
+        msg = MIMEText(body)
+        msg["Subject"] = subject
+        msg["From"] = from_address
+        msg["To"] = to_address
+
+        s = smtplib.SMTP_SSL("smtp.gmail.com", 465)
+        s.ehlo()
+        s.login(from_address, password)
+        s.sendmail(from_address, to_address, msg.as_string())
+        s.close()
+
+    with current_app.app_context():
+        t = Thread(target=dofunc)
+        t.start()
+
+
 def send_passwordreset_mail(user: User):
-    import smtplib
-    from email.mime.text import MIMEText
-
-    from_address = current_app.config["EMAIL"]
-    to_address = user.email
-
-    msg = MIMEText(
-        """Hi, {username}.
+    body = """Hi, {username}.
 Your password reset link is here: {address}
     """.format(
-            username=user.name,
-            address=os.path.join(request.url_root, "#/reset/" + user.reset_token),
-        )
+        username=user.name,
+        address=os.path.join(request.url_root, "#/reset/" + user.reset_token),
     )
-    msg["Subject"] = "{} password reset issue".format(current_app.config["CTF_NAME"])
-    msg["From"] = from_address
-    msg["To"] = to_address
+    subject = "{} password reset issue".format(current_app.config["CTF_NAME"])
 
-    s = smtplib.SMTP_SSL("smtp.gmail.com", 465)
-    s.ehlo()
-    s.login(from_address, current_app.config["EMAIL_PASSWORD"])
-    s.sendmail(from_address, to_address, msg.as_string())
-    s.close()
+    sendmail_async(
+        body,
+        subject,
+        user.email,
+        current_app.config["EMAIL"],
+        current_app.config["EMAIL_PASSWORD"],
+    )
 
 
 def send_verification_mail(user: User):
-    import smtplib
-    from email.mime.text import MIMEText
-
-    from_address = current_app.config["EMAIL"]
-    to_address = user.email
-
-    msg = MIMEText(
-        """Hi, {username}.
+    body = """Hi, {username}.
 You have just registered to {ctf}. Please confirm your email address to access the following link.
 {address}
     """.format(
-            username=user.name,
-            ctf=current_app.config["CTF_NAME"],
-            address=os.path.join(request.url_root, "#/confirm/" + user.reset_token),
-        )
+        username=user.name,
+        ctf=current_app.config["CTF_NAME"],
+        address=os.path.join(request.url_root, "#/confirm/" + user.reset_token),
     )
-    msg["Subject"] = "{} registration confirm".format(current_app.config["CTF_NAME"])
-    msg["From"] = from_address
-    msg["To"] = to_address
-
-    s = smtplib.SMTP_SSL("smtp.gmail.com", 465)
-    s.ehlo()
-    s.login(from_address, current_app.config["EMAIL_PASSWORD"])
-    s.sendmail(from_address, to_address, msg.as_string())
-    s.close()
+    subject = "{} registration confirm".format(current_app.config["CTF_NAME"])
+    sendmail_async(
+        body,
+        subject,
+        user.email,
+        current_app.config["EMAIL"],
+        current_app.config["EMAIL_PASSWORD"],
+    )
 
 
 @user.route("/reset-request", methods=["POST"])
@@ -215,11 +222,11 @@ def register():
     db.session.add(user)
     db.session.commit()
 
-    send_verification_mail(user)
-
     logger.log(
         ":heavy_plus_sign: `{}@{}` is registered".format(user.name, user.team.name)
     )
+    send_verification_mail(user)
+
     return jsonify({"id": user.id, "name": user.name})
 
 
