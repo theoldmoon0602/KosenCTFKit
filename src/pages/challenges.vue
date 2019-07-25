@@ -21,7 +21,7 @@
                     form(@submit.prevent="submit")
                         input(type="hidden" name="id" :value="chal.id")
                         .input-group.mb-3
-                            input.form-control(type="text" name="flag" required placeholder="KosenCTF{.+}")
+                            input.form-control(type="text" name="flag" required :placeholder="flag_format")
                             .input-group-append
                                 button.btn.btn-primary(type="submit") Submit
 
@@ -82,6 +82,9 @@ export default Vue.extend({
         },
     },
     computed: {
+        flag_format() {
+            return this.$store.getters.getFlagFormat
+        }
     }
 })
 </script>

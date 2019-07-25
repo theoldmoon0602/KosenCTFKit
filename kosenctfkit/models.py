@@ -194,6 +194,7 @@ class Config(db.Model):
     __tablename__ = "config"
 
     name = db.Column(db.String(512), nullable=False, primary_key=True)
+    flag_format = db.Column(db.String(512), nullable=False)
     start_at = db.Column(db.Integer, nullable=False)
     end_at = db.Column(db.Integer, nullable=False)
     is_open = db.Column(db.Boolean, nullable=False)

@@ -47,8 +47,12 @@ def update():
         "start_at": datetime.fromtimestamp(config.start_at).isoformat() + "Z",
         "end_at": datetime.fromtimestamp(config.end_at).isoformat() + "Z",
         "ctf_name": ctf_name,
+        "flag_format": config.flag_format,
         "ctf_open": ctf_open,
         "ctf_frozen": ctf_frozen,
+        "score_expr": config.score_expr.replace("V", "base_score").replace(
+            "N", "solve_count"
+        ),
         "register_open": register_open,
         "users": users,
         "teams": teams,

@@ -37,8 +37,10 @@ export default new Vuex.Store({
                     context.commit('setChallenges', r.data['challenges'])
                     context.commit('setCTFInfo', {
                         name: r.data['ctf_name'],
+                        flag_format: r.data['flag_format'],
                         ctf_open: r.data['ctf_open'],
                         ctf_frozen: r.data['ctf_frozen'],
+                        score_expr: r.data['score_expr'],
                         register_open: r.data['register_open'],
                         start_at: r.data['start_at'],
                         end_at: r.data['end_at'],
