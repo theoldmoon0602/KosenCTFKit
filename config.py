@@ -20,6 +20,7 @@ class DefaultConfig:
     EMAIL_PASSWORD = "emailaccountspassword"
 
     CTF_NAME = "KosenCTF"
+    FLAGFORMAT = "KosenCTF{[A-Za-z0-9_- !?#]+}"
     START_AT = pytz.timezone("Asia/Tokyo").localize(datetime(2019, 1, 1, 0, 0, 0))
     END_AT = pytz.timezone("Asia/Tokyo").localize(datetime(2020, 1, 1, 0, 0, 0))
     SCORE_EXPR = "max(200, (V*V) / (V + (V/10) * (0 if N == 1 else N)))"

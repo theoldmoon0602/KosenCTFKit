@@ -4,8 +4,10 @@ import Vue from 'vue'
 export default {
     state: {
         name: undefined,
+        flag_format: "",
         ctf_open: false,
         ctf_frozen: false,
+        score_expr: "",
         start_at: 0,
         end_at: 0,
         register_open: false,
@@ -17,6 +19,9 @@ export default {
         getCTFName(state) {
             return state.name
         },
+        getFlagFormat(state){
+            return state.flag_format
+        },
         getUsers(state) {
             return state.users
         },
@@ -25,6 +30,9 @@ export default {
         },
         getCTFEnd(state) {
             return state.end_at
+        },
+        getScoreExpr(state) {
+            return state.score_expr
         },
         getTeams(state) {
             return state.teams
@@ -45,9 +53,11 @@ export default {
     mutations: {
         setCTFInfo(state, info) {
             state.name = info.name
+            state.flag_format = info.flag_format
             document.title = state.name
             state.ctf_open = info.ctf_open
             state.ctf_frozen = info.ctf_frozen
+            state.score_expr = info.score_expr
             state.register_open = info.register_open
             state.start_at = new Date(info.start_at)
             state.end_at = new Date(info.end_at)

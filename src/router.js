@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Router from 'vue-router/dist/vue-router.js'
 
 import index from './pages/index.vue'
+import rule from './pages/rule.vue'
 import login from './pages/login.vue'
 import register from './pages/register.vue'
 import challenges from './pages/challenges.vue'
@@ -20,6 +21,10 @@ export default new Router({
         {
             path: '/',
             component: index
+        },
+        {
+            path: '/rule',
+            component: rule,
         },
         {
             path: '/login',

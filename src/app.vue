@@ -16,6 +16,8 @@
                             li.nav-item
                                 router-link.nav-link(to="/") About
                             li.nav-item
+                                router-link.nav-link(to="/rule") Rule
+                            li.nav-item
                                 router-link.nav-link(to="/scoreboard") Scoreboard
                             li.nav-item
                                 router-link.nav-link(to="/players") Players
