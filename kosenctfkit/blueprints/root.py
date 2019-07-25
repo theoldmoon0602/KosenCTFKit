@@ -52,7 +52,7 @@ def update():
         "register_open": register_open,
         "users": users,
         "teams": teams,
-        "challenegs": {},
+        "challenges": {},
     }
     if user:
         userinfo, teaminfo = get_user_and_team(user, valid_only=valid_only)
