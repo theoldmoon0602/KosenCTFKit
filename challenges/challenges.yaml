@@ -22,3 +22,11 @@ challenges:
     base_score: 1000
     host: *web_host
     port: 10000
+  Survey:
+    flag: KosenCTF{thankyou_for_playing}
+    description: "This is survey challenge. KosenCTF{thankyou_for_playing}"
+    author: theoldmoon0602
+    tags:
+      - survey
+    difficulty: easy
+    base_score: 1000

@@ -1,7 +1,6 @@
 <template lang="pug">
     div
         h2 Scoreboard
-        .alert.alert-info(v-if="isFrozen") SCOREBORED HAS BEEN FROZEN
         p
             button.btn.btn-primary(@click="update_graph") update
             canvas(ref="chart")

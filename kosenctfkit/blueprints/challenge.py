@@ -40,6 +40,9 @@ def submit(user):
     if user.team:
         s.team_id = user.team.id
 
+    if "survey" in c.tags:
+        s.created_at = Config.get().start_at
+
     if c.flag == flag and already_solved:
         logger.log(
             ":heavy_check_mark: `{}@{}` has submitted flag `{}` to `{}`. It has already solved.".format(
