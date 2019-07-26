@@ -11,12 +11,12 @@
             a(href="#") slack
 
         h2 Sponsors
-        .row
-            div.col-6
+        .row.justify-content-center
+            div.col-4
                 img(src="../sponserhorse.png" style="width: 100%;")
-            div.col-6
-                img(src="../sponserhorse.png" style="width: 100%;")
-            div.col-6
+            div.col-4
+                img(src="../sponserhorse256.png" style="width: 100%;")
+            div.col-4
                 img(src="../sponserhorse.png" style="width: 100%;")
 
 </template>
