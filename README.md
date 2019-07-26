@@ -18,9 +18,8 @@ This is a joke CTF platform inspired of CTFKit.
     + `DEBUG = False`とする
     + `CATEGORY_SERVERS`を設定する
     + `SQLALCHEMY_DATABASE_URI`や`WEBHOOK_URL`を環境に合わせて設定する
-- `ctf_config.yaml`をCTFの設定に合わせて編集する
     + `admin`の項目は必ず変更する
-- `src/pages/index.vue`をCTFに合わせて編集する
+- `src/pages/`をCTFに合わせて編集する
 - `docker-compose.yaml`を環境に合わせて編集する
 - `docker-compose up --build -d`
 
@@ -32,7 +31,7 @@ $ docker-compose exec kosenctfkit python3 manage.py open --only-register
 
 ### CTF開始
 
-注意：この設定が行われていて、かつ`cft_config.yaml`に設定したCTFの開催期間中はCTFが行われます
+注意：この設定が行われていて、かつ`config.py`に設定したCTFの開催期間中はCTFが行われます
 
 ```
 $ docker-compose exec kosenctfkit python3 manage.py open
@@ -70,6 +69,6 @@ $ docker-compose exec kosenctfkit python3 manage.py challenge open "<問題名1>
 
 ### adminとして色々を管理
 
-`ctf_config.yaml`に設定した管理ユーザのユーザ名・パスワードでログインして`/admin`にアクセスする
+`config.py`に設定した管理ユーザのユーザ名・パスワードでログインして`/admin`にアクセスする
 
 
