@@ -46,12 +46,19 @@ def login_required(f):
 def as_url(app, path):
     if not path:
         return path
-    return url_for(
-        "static",
-        filename=os.path.join(
-            app.static_url_path, os.path.relpath(path, app.static_folder)
-        ),
-    )
+
+    from urllib.parse import urlparse
+
+    try:
+        _ = urlparse(path)
+        return path
+    except ValueError:
+        return url_for(
+            "static",
+            filename=os.path.join(
+                app.static_url_path, os.path.relpath(path, app.static_folder)
+            ),
+        )
 
 
 def get_user_and_team(user, valid_only):
