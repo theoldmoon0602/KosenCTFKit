@@ -40,7 +40,7 @@
 
                 .alert.alert-danger(v-if="!isConnected") SERVER CONNECTION MISSING
                 .alert.alert-danger(v-if="!isOpen") CTF IS CLOSED
-                .alert.alert-danger(v-if="isFrozen") SCOREBOARD IS FROZEN
+                .alert.alert-info(v-if="isFrozen") SCOREBOARD IS FROZEN
                 transition(name="msg")
                     div.message(v-if="message.content")
                         p(v-bind:class="{error : message.is_error}") {{message.content}}
