@@ -1,6 +1,5 @@
 version: '3'
 services:
-
     kosenctfkit_db:
         image: postgres:10.6-alpine
         ports:
@@ -11,7 +10,7 @@ services:
           - POSTGRES_DB=kosenctfkit
           - POSTGRES_INITDB_ARGS=--encoding=UTF-8
         volumes:
-          - $PWD/database:/var/lib/postgresql/data
+          - ./database:/var/lib/postgresql/data
     kosenctfkit:
         build: ./
         restart: always
@@ -25,7 +24,7 @@ services:
             - ./config.py:/app/config.py
         command: >
             sh -c "
-            python3 manage.py init ctf_config.yaml &&
+            python3 manage.py init &&
             python3 manage.py challenge add --all &&
             gunicorn app:app -b 0.0.0.0:5000"
 
