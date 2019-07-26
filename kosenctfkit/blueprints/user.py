@@ -4,7 +4,6 @@ from sqlalchemy.exc import IntegrityError
 from kosenctfkit.models import db, Config, Team, User
 from kosenctfkit.utils import error, login_required
 from kosenctfkit.logging import logger
-from kosenctfkit.uploader import uploader
 from threading import Thread
 
 
@@ -278,7 +277,7 @@ def upload_icon(user):
     icon = request.json.get("icon", "").strip()
     if not icon:
         return error("Icon required")
-    path = uploader.upload_icon(icon)
+    path = current_app.uploader.upload_icon(icon)
     if not path:
         return error("Failed to upload the icon")
 

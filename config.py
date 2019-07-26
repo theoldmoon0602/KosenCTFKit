@@ -28,5 +28,11 @@ class DefaultConfig:
     ADMIN_PASSWORD = "password"
     SSH = {"localhost": "example"}
 
+    # AWS
+    # AWS_ACCESS_KEY = "AK******************"
+    # AWS_ACCESS_SECRET = "****************************************"
+    # S3_REGION = "ap-northeast-1"
+    # S3_BUCKET = "kosenctf"
+
 
 config = DefaultConfig()

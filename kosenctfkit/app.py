@@ -1,6 +1,6 @@
 from kosenctfkit.models import init_db
 from kosenctfkit.logging import logger
-from kosenctfkit.uploader import uploader
+from kosenctfkit.uploader import LocalUploader, S3Uploader
 from kosenctfkit.blueprints import challenge, team, user, root
 from kosenctfkit.utils import get_login_user
 from kosenctfkit.models import (
@@ -45,8 +45,11 @@ def init_app(app, config):
     init_db(app)
     if "WEBHOOK_URL" in app.config:
         logger.init(app.config["WEBHOOK_URL"])
-    uploader.init(app)
-    app.uploader = uploader
+
+    if "AWS_ACCESS_KEY" in app.config:
+        app.uploader = S3Uploader(app)
+    else:
+        app.uploader = LocalUploader(app)
 
     app.config["FLASK_ADMIN_SWATCH"] = "cerulean"
     admin = Admin(app, name="admin", template_mode="bootstrap3")
