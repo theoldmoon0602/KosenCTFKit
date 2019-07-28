@@ -13,20 +13,26 @@ This is a joke CTF platform inspired of CTFKit.
 - `ssh`の中身を設定する（このディレクトリは `~/.ssh`相当
     + 使用する秘密鍵を配置する
     + sshの設定を`ssh/config`に書く
-- `config.py`を編集する
+- `config.py`を編集する。以下は必ずやる
     + `SECRET_KEY`を適当な別の文字烈に変える
     + `DEBUG = False`とする
-    + `CATEGORY_SERVERS`を設定する
-    + `SQLALCHEMY_DATABASE_URI`や`WEBHOOK_URL`を環境に合わせて設定する
-    + `admin`の項目は必ず変更する
+    + `ADMIN_NAME` `ADMIN_PASSWORD` を変える
 - `src/pages/`をCTFに合わせて編集する
 - `docker-compose.yaml`を環境に合わせて編集する
 - `docker-compose up --build -d`
 
+### `manage.py` が動かないとき
+
+`help` は各サブコマンド毎に表示されるはずなので個々からREADMEの間違いを見つける
+
+```
+$ docker-compose exec kosenctfkit python3 manage.py --help
+```
+
 ### 登録開始
 
 ```
-$ docker-compose exec kosenctfkit python3 manage.py open --only-register
+$ docker-compose exec kosenctfkit python3 manage.py open --register
 ```
 
 ### CTF開始
@@ -45,14 +51,14 @@ $ docker-compose exec kosenctfkit python3 manage.py open
 $ docker-compose exec kosenctfkit python3 manage.py challenge deploy <問題名>
 ```
 
-問題が解けることの確認も同時に行う場合
+問題が解けることの確認も同時に行う場合（これはちゃんと動いた試しがない）
 
 ```
 $ docker-compose exec kosenctfkit python3 manage.py challenge deploy <問題名> --check
 ```
 
 
-問題が解けることの確認のみを行う場合
+問題が解けることの確認のみを行う場合（同上）
 
 ```
 $ docker-compose exec kosenctfkit python3 manage.py challenge check <問題名>

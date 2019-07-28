@@ -69,8 +69,14 @@ def init():
     ctf = Config.get() or Config()  # type: Config
     ctf.name = app.config["CTF_NAME"]
     ctf.flag_format = app.config["FLAGFORMAT"]
-    ctf.start_at = int(app.config["START_AT"].timestamp() - app.config["START_AT"].utcoffset().total_seconds())
-    ctf.end_at = int(app.config["END_AT"].timestamp() - app.config["END_AT"].utcoffset().total_seconds())
+    ctf.start_at = int(
+        app.config["START_AT"].timestamp()
+        - app.config["START_AT"].utcoffset().total_seconds()
+    )
+    ctf.end_at = int(
+        app.config["END_AT"].timestamp()
+        - app.config["END_AT"].utcoffset().total_seconds()
+    )
     ctf.score_expr = app.config["SCORE_EXPR"]
     ctf.is_open = ctf.is_open or False
     ctf.register_open = ctf.register_open or False
