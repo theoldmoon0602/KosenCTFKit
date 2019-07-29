@@ -146,7 +146,6 @@ def challenge(directory):
         challenges = yaml.safe_load(f)["challenges"]
 
     for name in challenges.keys():
-        print(name)
         if challenges[name].get("completed", True) is False:
             continue
         challenges[name]["name"] = name

@@ -12,7 +12,7 @@
 
         template(v-if="loginUser && user.id == loginUser.id")
             .custom-file
-                input.custom-file-input#icon(type="file" accept="image/*" required @change="selectIcon")
+                input.custom-file-input#icon(type="file" accept="image/png" required @change="selectIcon")
                 label.custom-file-label(for="icon") Upload Icon
             form(@submit.prevent="updatePassword")
                 .form-group
