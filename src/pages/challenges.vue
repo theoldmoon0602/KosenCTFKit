@@ -1,5 +1,5 @@
 <template lang="pug">
-    div
+    div(style="margin-bottom: 100px;")
         .form-group
             label.d-block(for="filter") filter challenges by name, difficulty, tags
             input.form-control#filter(type="text" v-model="filter")
@@ -9,7 +9,7 @@
                     |{{ chal.name }}
                     small.small [{{ chal.score }}] - {{ chal.solved }} solved
                     span.float-right
-                        span.badge.badge-info {{chal.difficulty}}
+                        span.badge.badge-info {{difficulty(chal.difficulty)}}
                         span.badge.badge-primary(v-for="tag in chal.tags") {{ tag }}
             .collapse(:id="'chal-'+chal.id")
                 .card-body.col-12.col-md-8.mx-auto
@@ -37,6 +37,11 @@ export default Vue.extend({
         }
     },
     methods: {
+        difficulty(d) {
+            let difficulties = ["warmup", "easy", "medium", "hard", "lunatic"];
+            let index = Math.max(0, Math.min(difficulties.length - 1, d | 0))
+            return difficulties[index]
+        },
         submit(e) {
             let data = new FormData(e.target)
             let json = {}
@@ -65,7 +70,7 @@ export default Vue.extend({
                         filtered.push(challenge)
                         continue;
                     }
-                    if (challenge.difficulty.includes(this.filter)) {
+                    if (this.difficulty(challenge.difficulty).includes(this.filter)) {
                         filtered.push(challenge)
                         continue;
                     }
@@ -96,7 +101,7 @@ export default Vue.extend({
                     return 1;
                 }
                 else {
-                    return a.score-b.score;
+                    return a.difficulty-b.difficulty;
                 }
             })
         },

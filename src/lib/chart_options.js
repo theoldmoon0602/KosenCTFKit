@@ -1,12 +1,11 @@
 const colorhash = function(s) {
-  var hash = 0, i, chr;
-  if (s.length === 0) return hash;
-  for (i = 0; i < s.length; i++) {
-    chr   = s.charCodeAt(i);
-    hash  = ((hash << 5) - hash) + chr;
-    hash |= 0; // Convert to 32bit integer
-  }
-  return '#' + (hash % 0xfff).toString(16).padStart(3, '0');
+	let hash = 0;
+
+	for (let i = 0; i < s.length; i++) {
+		hash = s.charCodeAt(i) + (hash << 6) + (hash << 16) - hash;
+	}
+
+  return '#' + ((hash|0) % 0xffffff).toString(16).padStart(6, '0');
 };
 const chart_options = {
   type: 'line',

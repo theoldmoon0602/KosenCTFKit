@@ -146,6 +146,9 @@ def challenge(directory):
         challenges = yaml.safe_load(f)["challenges"]
 
     for name in challenges.keys():
+        print(name)
+        if challenges[name].get("completed", True) is False:
+            continue
         challenges[name]["name"] = name
 
 
@@ -173,6 +176,9 @@ def challenge_add(names, all):
     for name, c in challenges.items():  # type: Chall
         # filter
         if not all and name not in names:
+            continue
+
+        if c.get("completed", True) is False:
             continue
 
         chall = Challenge.query.filter(Challenge.name == name).first() or Challenge()
