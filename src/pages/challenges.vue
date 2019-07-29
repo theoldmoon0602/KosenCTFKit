@@ -56,29 +56,49 @@ export default Vue.extend({
             return false
         },
         challenges() {
-            if (! this.filter) {
-                return this.$store.getters.getChallenges;
-            }
             let filtered = [];
             let challenges = this.$store.getters.getChallenges;
-            for (let i of Object.keys(challenges)) {
-                let challenge = challenges[i]
-                if (challenge.name.includes(this.filter)) {
-                    filtered.push(challenge)
-                    continue;
-                }
-                if (challenge.difficulty.includes(this.filter)) {
-                    filtered.push(challenge)
-                    continue;
-                }
-                for (let tag of challenge.tags) {
-                    if (tag.includes(this.filter)) {
+            if (this.filter) {
+                for (let i of Object.keys(challenges)) {
+                    let challenge = challenges[i]
+                    if (challenge.name.includes(this.filter)) {
                         filtered.push(challenge)
-                        break;
+                        continue;
+                    }
+                    if (challenge.difficulty.includes(this.filter)) {
+                        filtered.push(challenge)
+                        continue;
+                    }
+                    for (let tag of challenge.tags) {
+                        if (tag.includes(this.filter)) {
+                            filtered.push(challenge)
+                            break;
+                        }
                     }
                 }
+            } else {
+                for (let i of Object.keys(challenges)) {
+                    filtered.push(challenges[i]);
+                }
             }
-            return filtered;
+            return filtered.sort((a, b) => {
+                let tagA = "", tagB = "";
+                if (a.tags.length > 0) {
+                    tagA = a.tags[0];
+                }
+                if (b.tags.length > 0) {
+                    tagB = b.tags[0];
+                }
+                if (tagA < tagB) {
+                    return -1;
+                }
+                else if (tagA > tagB) {
+                    return 1;
+                }
+                else {
+                    return a.score-b.score;
+                }
+            })
         },
     },
     computed: {
