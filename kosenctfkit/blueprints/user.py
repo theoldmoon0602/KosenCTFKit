@@ -34,10 +34,18 @@ def sendmail_async(
 
 
 def send_passwordreset_mail(user: User):
-    body = """Hi, {username}.
-Your password reset link is here: {address}
-    """.format(
+    body = """Hi, {username}
+
+You have just requested to reset your password for {ctf}.
+Visit the following link to reset your password:
+{address}
+
+If you did not request a password reset, please ignore this email or reply this email.
+
+Thanks,
+{ctf} Organizers""".format(
         username=user.name,
+        ctf=current_app.config["CTF_NAME"],
         address=os.path.join(request.url_root, "#/reset/" + user.reset_token),
     )
     subject = "{} password reset issue".format(current_app.config["CTF_NAME"])
@@ -52,10 +60,17 @@ Your password reset link is here: {address}
 
 
 def send_verification_mail(user: User):
-    body = """Hi, {username}.
-You have just registered to {ctf}. Please confirm your email address to access the following link.
+    body = """Hi, {username}
+
+You have just registered {ctf}.
+Please confirm your email address by visiting the following link.
 {address}
-    """.format(
+
+Share your team token with your team members.
+You can see your team token in the profile page of your team.
+
+Thanks,
+{ctf} Organizers""".format(
         username=user.name,
         ctf=current_app.config["CTF_NAME"],
         address=os.path.join(request.url_root, "#/confirm/" + user.reset_token),
@@ -85,7 +100,7 @@ def resetRequest():
         return error("Username and/or email address is mismatching")
 
     if not user.verified:
-        return error("Your email address is unverified")
+        return error("Your email address is not verified")
 
     user.issueResetToken()
     db.session.add(user)
@@ -99,18 +114,18 @@ def resetRequest():
 def reset():
     token = request.json.get("token", "").strip()
     if not token:
-        return error("The reset token is required")
+        return error("Reset token is required")
 
     password = request.json.get("password", "").strip()
     if not password:
-        return error("The password is required")
+        return error("Password is required")
 
     user = User.query.filter(User.reset_token == token).first()
     if not user:
-        return error("The token is invalid")
+        return error("Team token is invalid")
 
     if not user.checkToken(token):
-        return error("The token is invalid or outdated")
+        return error("Team token is invalid or outdated")
 
     user.revokeToken()
     user.password = password
@@ -127,7 +142,7 @@ def resend(user):
         return error("Email address is required")
 
     if user.verified:
-        return error("You are already verified")
+        return error("You're already verified")
 
     u2 = User.query.filter(User.email == email).first()
     if u2 and u2.id != user.id:
@@ -146,14 +161,14 @@ def resend(user):
 def confirm():
     token = request.json.get("token", "").strip()
     if not token:
-        return error("The token is required")
+        return error("Team token is required")
 
     user = User.query.filter(User.reset_token == token).first()
     if not user:
-        return error("The token is invalid")
+        return error("Team token is invalid")
 
     if not user.checkToken(token):
-        return error("The token is invalid or outdated")
+        return error("Team token is invalid or outdated")
 
     user.verified = True
     if not user.team.valid:
@@ -196,7 +211,7 @@ def register():
         token = request.json.get("teamtoken").strip()
         team = Team.query.filter(Team.token == token, Team.valid == True).first()
         if not team:
-            return error("The token is invalid")
+            return error("Team token is invalid")
     elif request.json.get("teamname"):
         teamname = request.json.get("teamname").strip()
         team = Team.query.filter(Team.name == teamname).first()
@@ -223,7 +238,7 @@ def register():
     db.session.commit()
 
     logger.log(
-        ":heavy_plus_sign: `{}@{}` is registered".format(user.name, user.team.name)
+        ":heavy_plus_sign: `{}@{}` registered".format(user.name, user.team.name)
     )
     send_verification_mail(user)
 
@@ -242,7 +257,7 @@ def login():
 
     user = User.query.filter(User.name == username).first()
     if not user:
-        return error("User `{}` doesn't exist".format(username))
+        return error("The user `{}` doesn't exist".format(username))
 
     if not user.check_password(password):
         return error("Invalid password")
