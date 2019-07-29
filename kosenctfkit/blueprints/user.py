@@ -205,6 +205,7 @@ def register():
 
         team = Team(name=teamname)
         team.valid = True
+        team.renewToken()
         db.session.add(team)
         db.session.commit()
     else:

@@ -146,7 +146,7 @@ class Challenge(db.Model):
     flag = db.Column(db.String(512), nullable=False)
     description = db.Column(db.Text, nullable=False)
     tags = db.Column(ARRAY(db.String(512)), nullable=False)
-    difficulty = db.Column(db.String(512))
+    difficulty = db.Column(db.Integer)
     author = db.Column(db.String(512), nullable=False)
     base_score = db.Column(db.Integer, nullable=False)
     score = db.Column(db.Integer, nullable=False)

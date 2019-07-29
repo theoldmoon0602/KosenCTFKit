@@ -47,12 +47,9 @@ def as_url(app, path):
     if not path:
         return path
 
-    from urllib.parse import urlparse
-
-    try:
-        _ = urlparse(path)
+    if path.startswith("http"):
         return path
-    except ValueError:
+    else:
         return url_for(
             "static",
             filename=os.path.join(

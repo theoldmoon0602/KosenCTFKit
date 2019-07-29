@@ -1,5 +1,5 @@
 <template lang="pug">
-    div
+    div(style="margin-bottom: 100px;")
         .form-group
             label.d-block(for="filter") filter challenges by name, difficulty, tags
             input.form-control#filter(type="text" v-model="filter")
@@ -9,7 +9,7 @@
                     |{{ chal.name }}
                     small.small [{{ chal.score }}] - {{ chal.solved }} solved
                     span.float-right
-                        span.badge.badge-info {{chal.difficulty}}
+                        span.badge.badge-info {{difficulty(chal.difficulty)}}
                         span.badge.badge-primary(v-for="tag in chal.tags") {{ tag }}
             .collapse(:id="'chal-'+chal.id")
                 .card-body.col-12.col-md-8.mx-auto
@@ -37,6 +37,11 @@ export default Vue.extend({
         }
     },
     methods: {
+        difficulty(d) {
+            let difficulties = ["warmup", "easy", "medium", "hard", "lunatic"];
+            let index = Math.max(0, Math.min(difficulties.length - 1, d | 0))
+            return difficulties[index]
+        },
         submit(e) {
             let data = new FormData(e.target)
             let json = {}
@@ -56,29 +61,49 @@ export default Vue.extend({
             return false
         },
         challenges() {
-            if (! this.filter) {
-                return this.$store.getters.getChallenges;
-            }
             let filtered = [];
             let challenges = this.$store.getters.getChallenges;
-            for (let i of Object.keys(challenges)) {
-                let challenge = challenges[i]
-                if (challenge.name.includes(this.filter)) {
-                    filtered.push(challenge)
-                    continue;
-                }
-                if (challenge.difficulty.includes(this.filter)) {
-                    filtered.push(challenge)
-                    continue;
-                }
-                for (let tag of challenge.tags) {
-                    if (tag.includes(this.filter)) {
+            if (this.filter) {
+                for (let i of Object.keys(challenges)) {
+                    let challenge = challenges[i]
+                    if (challenge.name.includes(this.filter)) {
                         filtered.push(challenge)
-                        break;
+                        continue;
+                    }
+                    if (this.difficulty(challenge.difficulty).includes(this.filter)) {
+                        filtered.push(challenge)
+                        continue;
+                    }
+                    for (let tag of challenge.tags) {
+                        if (tag.includes(this.filter)) {
+                            filtered.push(challenge)
+                            break;
+                        }
                     }
                 }
+            } else {
+                for (let i of Object.keys(challenges)) {
+                    filtered.push(challenges[i]);
+                }
             }
-            return filtered;
+            return filtered.sort((a, b) => {
+                let tagA = "", tagB = "";
+                if (a.tags.length > 0) {
+                    tagA = a.tags[0];
+                }
+                if (b.tags.length > 0) {
+                    tagB = b.tags[0];
+                }
+                if (tagA < tagB) {
+                    return -1;
+                }
+                else if (tagA > tagB) {
+                    return 1;
+                }
+                else {
+                    return a.difficulty-b.difficulty;
+                }
+            })
         },
     },
     computed: {

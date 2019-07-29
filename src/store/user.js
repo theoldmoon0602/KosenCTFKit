@@ -40,7 +40,7 @@ export default {
         register(context, userninfo) {
             return axios.post('/register', userninfo)
                 .then(r => {
-                    context.dispatch('setMessage', 'You has just registered. Please check your e-mail box to confirm')
+                    context.dispatch('setMessage', 'You have registered. Please check your e-mail box to confirm')
                     return r
                 })
                 .catch(e => {
