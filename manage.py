@@ -366,13 +366,13 @@ def challenge_deploy(challenge):
     ssh_config = app.config["SSH"][challenge["host"]]
     try:
         subprocess.run(
-            ["rsync", "-a", "-e", "ssh", challengedir, "{}:/tmp/".format(ssh_config)]
+            ["rsync", "-a", "-e", "ssh", challengedir, "{}:~/".format(ssh_config)]
         )
         subprocess.run(
             [
                 "ssh",
                 ssh_config,
-                "cd /tmp/{}; env PORT={} docker-compose up --build -d".format(
+                "cd ~/{}; sudo env PORT={} docker-compose up --build -d".format(
                     normal_name(challenge["name"]), challenge["port"]
                 ),
             ]
@@ -416,7 +416,7 @@ def challenge_stop(challenge):
             [
                 "ssh",
                 ssh_config,
-                "cd /tmp/{}; env PORT={} docker-compose stop".format(
+                "cd ~/{}; sudo env PORT={} docker-compose stop".format(
                     normal_name(challenge["name"]), challenge["port"]
                 ),
             ]
