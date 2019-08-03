@@ -35,8 +35,8 @@ class S3Uploader:
         filename = os.path.join(self.icon_dir, unique_name())
         return self.upload(b64decode(icon_b64), filename)
 
-    def upload_attachment(self, name):
-        key = os.path.join(unique_name(), os.path.basename(name))
+    def upload_attachment(self, name, randomname=None):
+        key = os.path.join(randomname or unique_name(), os.path.basename(name))
         return self.upload(open(name, "rb"), key)
 
 
@@ -60,14 +60,16 @@ class LocalUploader:
 
         return filepath
 
-    def upload_attachment(self, name):
+    def upload_attachment(self, name, randomname=None):
         basename = os.path.basename(name)
-        directory = unique_name()
+        directory = randomname or unique_name()
         directory_path = os.path.join(self.static_dir, directory)
         path = os.path.join(directory_path, basename)
         try:
             os.mkdir(directory_path)
             shutil.copyfile(name, path)
+        except FileExistsError:
+            pass
         except Exception as e:
             print(e)
             return None

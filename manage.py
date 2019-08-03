@@ -197,6 +197,13 @@ def challenge_add(names, all):
         db.session.commit()
         print("[+]ADD {}".format(chall.name))
 
+        # back up random parts of attachment
+        randoms = {}
+        for attachment in chall.attachments:
+            parts = attachment.url.split("/")
+            if len(parts) >= 2:
+                randoms[parts[-1]] = parts[-2]
+
         # delete current attachements
         chall.attachments.delete()
         db.session.commit()
@@ -210,7 +217,8 @@ def challenge_add(names, all):
                 tar.add(distfiles, arcname=normal_name(chall.name))
 
             # upload && remove
-            url = app.uploader.upload_attachment(tar_name)
+            randomname = randoms.get(tar_name, None)
+            url = app.uploader.upload_attachment(tar_name, randomname=randomname)
             os.remove(tar_name)
 
             # add attachments to challenge
@@ -222,8 +230,11 @@ def challenge_add(names, all):
         distarchive = challenges_dir / normal_name(chall.name) / "distarchive"
         if distarchive.exists():
             for tar_name in os.listdir(distarchive):
-                url = app.uploader.upload_attachment(distarchive / tar_name)
-                attachment = Attachment(url=url, challenge_id=chall.id)
+                randomname = randoms.get(tar_name, None)
+                url = app.uploader.upload_attachment(
+                    distarchive / tar_name, randomname=randomname
+                )
+                attachment = attachment(url=url, challenge_id=chall.id)
                 db.session.add(attachment)
                 db.session.commit()
                 print("  Attachment {}".format(tar_name))
