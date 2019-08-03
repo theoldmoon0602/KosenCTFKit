@@ -9,6 +9,7 @@
                 | The score of every challenge is calculated by the following formula:
                 pre
                     code dynamic_score = {{ scoreexpr }}
+            li If multiple teams get the same score, the team which solved their last challenge (except for Survey) earlier will be ranked higher.
             li There is no limit in the number of your team members.
             li There is no prize.
             li
