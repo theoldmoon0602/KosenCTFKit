@@ -8,7 +8,7 @@
 
         p.text-center.font-weight-bold
             | Join in our&nbsp;
-            a(href="#") slack
+            a(:href="invite_url") slack
 
         h2 Sponsors
         .row.justify-content-center
@@ -27,6 +27,9 @@ export default Vue.extend({
     computed: {
         ctfname() {
             return this.$store.getters.getCTFName
+        },
+        invite_url() {
+            return this.$store.getters.getInviteURL
         }
     },
 })

@@ -48,6 +48,7 @@ def update():
         "end_at": datetime.fromtimestamp(config.end_at).isoformat() + "Z",
         "ctf_name": ctf_name,
         "flag_format": config.flag_format,
+        "invite_url": config.invite_url,
         "ctf_open": ctf_open,
         "ctf_frozen": ctf_frozen,
         "score_expr": config.score_expr.replace("V", "base_score").replace(

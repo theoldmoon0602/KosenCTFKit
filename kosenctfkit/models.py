@@ -195,6 +195,9 @@ class Config(db.Model):
 
     name = db.Column(db.String(512), nullable=False, primary_key=True)
     flag_format = db.Column(db.String(512), nullable=False)
+    invite_url = db.Column(db.String(512))
+    email = db.Column(db.String(512))
+    email_password = db.Column(db.String(512))
     start_at = db.Column(db.Integer, nullable=False)
     end_at = db.Column(db.Integer, nullable=False)
     is_open = db.Column(db.Boolean, nullable=False)

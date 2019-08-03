@@ -5,6 +5,7 @@ export default {
     state: {
         name: undefined,
         flag_format: "",
+        invite_url: "",
         ctf_open: false,
         ctf_frozen: false,
         score_expr: "",
@@ -18,6 +19,9 @@ export default {
     getters: {
         getCTFName(state) {
             return state.name
+        },
+        getInviteURL(state) {
+            return state.invite_url
         },
         getFlagFormat(state){
             return state.flag_format
@@ -54,6 +58,7 @@ export default {
         setCTFInfo(state, info) {
             state.name = info.name
             state.flag_format = info.flag_format
+            state.invite_url = info.invite_url
             document.title = state.name
             state.ctf_open = info.ctf_open
             state.ctf_frozen = info.ctf_frozen

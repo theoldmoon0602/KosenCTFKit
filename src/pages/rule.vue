@@ -13,7 +13,7 @@
             li There is no prize.
             li
                 | If you have any questions during the contest, please contact to admin&nbsp;
-                a(href="#") here
+                a(:href="invite_url") here
                 | .
 
         h2 Restrictions
@@ -30,6 +30,9 @@ export default Vue.extend({
     computed: {
         ctfname() {
             return this.$store.getters.getCTFName
+        },
+        invite_url() {
+            return this.$store.getters.getInviteURL
         },
         scoreexpr() {
             return this.$store.getters.getScoreExpr

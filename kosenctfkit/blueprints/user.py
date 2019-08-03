@@ -34,6 +34,7 @@ def sendmail_async(
 
 
 def send_passwordreset_mail(user: User):
+    config = Config.get()  # type: Config
     body = """Hi, {username}
 
 You have just requested to reset your password for {ctf}.
@@ -45,21 +46,16 @@ If you did not request a password reset, please ignore this email or reply this 
 Thanks,
 {ctf} Organizers""".format(
         username=user.name,
-        ctf=current_app.config["CTF_NAME"],
+        ctf=config.name,
         address=os.path.join(request.url_root, "#/reset/" + user.reset_token),
     )
-    subject = "{} password reset issue".format(current_app.config["CTF_NAME"])
+    subject = "{} password reset issue".format(config.name)
 
-    sendmail_async(
-        body,
-        subject,
-        user.email,
-        current_app.config["EMAIL"],
-        current_app.config["EMAIL_PASSWORD"],
-    )
+    sendmail_async(body, subject, user.email, config.email, config.email_password)
 
 
 def send_verification_mail(user: User):
+    config = Config.get()  # type: Config
     body = """Hi, {username}
 
 You have just registered {ctf}.
@@ -72,17 +68,11 @@ You can see your team token in the profile page of your team.
 Thanks,
 {ctf} Organizers""".format(
         username=user.name,
-        ctf=current_app.config["CTF_NAME"],
+        ctf=config.name,
         address=os.path.join(request.url_root, "#/confirm/" + user.reset_token),
     )
-    subject = "{} registration confirm".format(current_app.config["CTF_NAME"])
-    sendmail_async(
-        body,
-        subject,
-        user.email,
-        current_app.config["EMAIL"],
-        current_app.config["EMAIL_PASSWORD"],
-    )
+    subject = "{} registration confirm".format(config.name)
+    sendmail_async(body, subject, user.email, config.email, config.email_password)
 
 
 @user.route("/reset-request", methods=["POST"])
@@ -237,9 +227,7 @@ def register():
     db.session.add(user)
     db.session.commit()
 
-    logger.log(
-        ":heavy_plus_sign: `{}@{}` registered".format(user.name, user.team.name)
-    )
+    logger.log(":heavy_plus_sign: `{}@{}` registered".format(user.name, user.team.name))
     send_verification_mail(user)
 
     return jsonify({"id": user.id, "name": user.name})

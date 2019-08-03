@@ -77,6 +77,7 @@ def init():
         app.config["END_AT"].timestamp()
         - app.config["END_AT"].utcoffset().total_seconds()
     )
+    ctf.invite_url = app.config["INVITE_URL"]
     ctf.score_expr = app.config["SCORE_EXPR"]
     ctf.is_open = ctf.is_open or False
     ctf.register_open = ctf.register_open or False

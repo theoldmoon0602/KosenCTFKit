@@ -38,6 +38,7 @@ export default new Vuex.Store({
                     context.commit('setCTFInfo', {
                         name: r.data['ctf_name'],
                         flag_format: r.data['flag_format'],
+                        invite_url: r.data['invite_url'],
                         ctf_open: r.data['ctf_open'],
                         ctf_frozen: r.data['ctf_frozen'],
                         score_expr: r.data['score_expr'],

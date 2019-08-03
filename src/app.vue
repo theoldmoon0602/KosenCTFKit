@@ -65,9 +65,6 @@ export default Vue.extend({
         }, 1000*60*10)  // every 10 minutes
     },
     methods: {
-        hi() {
-            console.log('hi')
-        },
         logout() {
             this.$store.dispatch('logout')
                 .then(r => {
