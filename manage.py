@@ -353,7 +353,7 @@ def challenge_check(challenge):
 @with_appcontext
 @click.argument("names", nargs=-1)
 @click.option("--all", help="open all challenges", is_flag=True)
-def challenge_deploy(names):
+def challenge_deploy(names, all):
     """deploy challenge to remote"""
     for name, challenge in challenges.items():
         if not all and name not in names:
