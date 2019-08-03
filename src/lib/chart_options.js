@@ -1,11 +1,5 @@
 const colorhash = function(s) {
-	let hash = 0;
-
-	for (let i = 0; i < s.length; i++) {
-		hash = s.charCodeAt(i) + (hash << 6) + (hash << 16) - hash;
-	}
-
-  return '#' + ((hash|0) % 0xffffff).toString(16).padStart(6, '0');
+  return '#' + (s.getHashCode()).toString(16).padStart(6, '0');
 };
 const chart_options = {
   type: 'line',
