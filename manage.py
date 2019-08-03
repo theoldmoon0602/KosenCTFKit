@@ -77,6 +77,8 @@ def init():
         app.config["END_AT"].timestamp()
         - app.config["END_AT"].utcoffset().total_seconds()
     )
+    ctf.email = app.config["EMAIL"]
+    ctf.email_password = app.config["EMAIL_PASSWORD"]
     ctf.invite_url = app.config["INVITE_URL"]
     ctf.score_expr = app.config["SCORE_EXPR"]
     ctf.is_open = ctf.is_open or False
