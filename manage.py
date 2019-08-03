@@ -234,7 +234,7 @@ def challenge_add(names, all):
                 url = app.uploader.upload_attachment(
                     distarchive / tar_name, randomname=randomname
                 )
-                attachment = attachment(url=url, challenge_id=chall.id)
+                attachment = Attachment(url=url, challenge_id=chall.id)
                 db.session.add(attachment)
                 db.session.commit()
                 print("  Attachment {}".format(tar_name))
