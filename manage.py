@@ -351,49 +351,47 @@ def challenge_check(challenge):
 
 @challenge.command("deploy")
 @with_appcontext
-@click.argument("challenge")
-def challenge_deploy(challenge):
+@click.argument("names", nargs=-1)
+@click.option("--all", help="open all challenges", is_flag=True)
+def challenge_deploy(names):
     """deploy challenge to remote"""
-    # get chall
-    challenge = challenges.get(challenge)
-    if challenge is None:
-        print("[-] no such challenge")
-        return
+    for name, challenge in challenges.items():
+        if not all and name not in names:
+            continue
 
-    # check docker-compose.yaml
-    challengedir = challenges_dir / normal_name(challenge["name"])
-    docker_compose = challengedir / "docker-compose.yaml"
-    if not docker_compose.exists():
-        docker_compose = challengedir / "docker-compose.yml"
+        # check docker-compose.yaml
+        challengedir = challenges_dir / normal_name(name)
+        docker_compose = challengedir / "docker-compose.yaml"
         if not docker_compose.exists():
-            print("[-] challenge dosn't have a docker-compose.ya?ml")
-            return
+            docker_compose = challengedir / "docker-compose.yml"
+            if not docker_compose.exists():
+                continue
 
-    # check server settings
-    if challenge.get("host") is None:
-        print("[-] no host deply to")
-        return
+        # check server settings
+        if challenge.get("host") is None:
+            print("[-] no host deply {} to".format(name))
+            continue
 
-    # launch deploy commands
-    ssh_config = app.config["SSH"][challenge["host"]]
-    try:
-        subprocess.run(
-            ["rsync", "-a", "-e", "ssh", challengedir, "{}:~/".format(ssh_config)]
-        )
-        subprocess.run(
-            [
-                "ssh",
-                ssh_config,
-                "cd ~/{}; sudo env PORT={} docker-compose up --build -d".format(
-                    normal_name(challenge["name"]), challenge["port"]
-                ),
-            ]
-        )
-    except subprocess.SubprocessError as e:
-        print("[-] error on deplyoing: {}".format(e))
-        exit(1)
+        # launch deploy commands
+        ssh_config = app.config["SSH"][challenge["host"]]
+        try:
+            subprocess.run(
+                ["rsync", "-a", "-e", "ssh", challengedir, "{}:~/".format(ssh_config)]
+            )
+            subprocess.run(
+                [
+                    "ssh",
+                    ssh_config,
+                    "cd ~/{}; sudo env PORT={} docker-compose up --build -d".format(
+                        normal_name(challenge["name"]), challenge["port"]
+                    ),
+                ]
+            )
+        except subprocess.SubprocessError as e:
+            print("[-] error on deplyoing: {}".format(e))
+            continue
 
-    print("[+] deploy done")
+        print("[+] DEPLOY {}".format(name))
 
 
 @challenge.command("stop")
