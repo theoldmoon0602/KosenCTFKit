@@ -1,5 +1,5 @@
 <template lang="pug">
-    .container
+    .container(style="margin-bottom: 50px;")
         transition(name="fade")
             div.loading(v-if="ctfname === undefined")
                 img(src="./penguin.png")

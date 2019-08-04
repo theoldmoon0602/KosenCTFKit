@@ -1,5 +1,5 @@
 <template lang="pug">
-    div(style="margin-bottom: 100px;")
+    div
         .form-group
             label.d-block(for="filter") filter challenges by name, difficulty, tags
             input.form-control#filter(type="text" v-model="filter")
