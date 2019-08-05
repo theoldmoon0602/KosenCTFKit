@@ -3,7 +3,12 @@
         h2 Basics
         ul
             li {{ctfname}} is an online jeopardy-style CTF.
-            li The competition will be held from {{start_at}} to {{end_at}}.
+            li
+                | The competition will be held from&nbsp;
+                code {{start_at}}
+                | &nbsp;to&nbsp;
+                code {{end_at}}
+                | .
             li The flag format is {{ flag_format }}, unless otherwise specified.
             li
                 | The score of every challenge is calculated by the following formula:
@@ -39,10 +44,10 @@ export default Vue.extend({
             return this.$store.getters.getScoreExpr
         },
         start_at() {
-            return moment(this.$store.getters.getCTFStart).format("YYYY-MM-DD(Z)")
+            return this.$store.getters.getCTFStart.toString()
         },
         end_at() {
-            return moment(this.$store.getters.getCTFEnd).format("YYYY-MM-DD(Z)")
+            return this.$store.getters.getCTFEnd.toString()
         },
         flag_format() {
             return this.$store.getters.getFlagFormat

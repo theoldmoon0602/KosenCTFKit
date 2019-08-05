@@ -71,11 +71,11 @@ def init():
     ctf.flag_format = app.config["FLAGFORMAT"]
     ctf.start_at = int(
         app.config["START_AT"].timestamp()
-        - app.config["START_AT"].utcoffset().total_seconds()
+        # - app.config["START_AT"].utcoffset().total_seconds()
     )
     ctf.end_at = int(
         app.config["END_AT"].timestamp()
-        - app.config["END_AT"].utcoffset().total_seconds()
+        # - app.config["END_AT"].utcoffset().total_seconds()
     )
     ctf.email = app.config["EMAIL"]
     ctf.email_password = app.config["EMAIL_PASSWORD"]
