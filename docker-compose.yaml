@@ -2,8 +2,6 @@ version: '3'
 services:
     kosenctfkit_db:
         image: postgres:10.6-alpine
-        ports:
-            - 5432:5432
         environment:
           - POSTGRES_USER=kosenctfkit
           - POSTGRES_PASSWORD=kosenctfkit
@@ -27,5 +25,14 @@ services:
             python3 manage.py init &&
             python3 manage.py challenge add --all &&
             gunicorn app:app -b 0.0.0.0:5000"
+    nginx:
+        build: ./nginx/
+        ports:
+            - 4080:80
+        volumes:
+            - ./accesslog:/var/log/nginx/
+        depends_on:
+            - kosenctfkit
+
 
 
