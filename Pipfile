@@ -19,6 +19,7 @@ pyyaml = "*"
 flask-admin = "*"
 psycopg2 = "*"
 boto3 = "*"
+gevent = "*"
 
 [requires]
 python_version = "3.7"

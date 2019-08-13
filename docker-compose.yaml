@@ -14,8 +14,6 @@ services:
         restart: always
         depends_on:
             - kosenctfkit_db
-        ports:
-            - 4000:5000
         volumes:
             - ./challenges:/app/challenges
             - ./ctf_config.yaml:/app/ctf_config.yaml
@@ -24,11 +22,11 @@ services:
             sh -c "
             python3 manage.py init &&
             python3 manage.py challenge add --all &&
-            gunicorn app:app -b 0.0.0.0:5000"
+            gunicorn app:app -b 0.0.0.0:5000 --worker-class=gevet --worker-connections=500 --workers=3"
     nginx:
         build: ./nginx/
         ports:
-            - 4080:80
+            - 80:80
         volumes:
             - ./accesslog:/var/log/nginx/
         depends_on:
