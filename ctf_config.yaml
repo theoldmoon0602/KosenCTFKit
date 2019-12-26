@@ -1,8 +1,0 @@
-ctf:
-  name: KosenCTF
-  start_at: 2019-05-05 00:00:00 +09:00
-  end_at: 2020-05-11 00:00:00 +09:00
-  score_expr: "max(200, (V*V) / (V + (V/10) * (0 if N == 1 else N)))"
-  admin:
-    name: "admin"
-    password: "password"
